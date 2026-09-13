@@ -189,16 +189,22 @@ select#locationParent {
 </style>
 
 <style id="costock-guide-wrap-fix">
-#homeGuideModal h2,
+#homeGuideModal h2{
+  line-height:1.5;
+  word-break:normal;
+  overflow-wrap:break-word;
+}
 #homeGuideModal .guide-lead,
 #homeGuideModal .guide-step b,
 #homeGuideModal .guide-step span,
 #homeGuideModal .guide-note{
-  word-break: keep-all;
-  overflow-wrap: normal;
+  word-break:normal;
+  overflow-wrap:break-word;
 }
-#homeGuideModal h2{
-  line-height:1.5;
+#homeGuideModal .guide-lead{
+  max-width:320px;
+  margin-left:auto;
+  margin-right:auto;
 }
 </style>
 
@@ -206,7 +212,7 @@ select#locationParent {
 <body>
 <div id="homeGuideModal" role="dialog" aria-modal="true" aria-labelledby="homeGuideTitle">
   <div class="home-guide-card">
-    <h2 id="homeGuideTitle">📱 最初にホーム画面へ追加してください</h2>
+    <h2 id="homeGuideTitle">📱 最初にホーム画面へ<br>追加してください</h2>
     <p class="guide-lead">CoStockは、最初にホーム画面へ追加してから使うのがおすすめです。<br><b>追加前はアイテムや保管場所を登録しないでください。</b></p>
     <div class="guide-steps">
       <div class="guide-step"><div class="guide-num">1</div><div><b>Safariの「共有」ボタンをタップ</b><span>画面下の □↑ から共有メニューを開きます。</span></div></div>
