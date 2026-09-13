@@ -170,8 +170,38 @@ select#locationParent {
 }
 </style>
 
+
+<style>
+#homeGuideModal{display:none;position:fixed;inset:0;background:rgba(35,29,40,.58);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);align-items:center;justify-content:center;z-index:9999;padding:18px;}
+#homeGuideModal .home-guide-card{width:100%;max-width:520px;background:#fff;border-radius:28px;padding:26px 22px 22px;box-shadow:0 20px 60px rgba(40,25,45,.22);color:#4a414d;}
+#homeGuideModal h2{margin:0 0 10px;font-size:23px;line-height:1.45;text-align:center;}
+#homeGuideModal .guide-lead{text-align:center;font-size:15px;line-height:1.7;margin:0 0 18px;color:#746a78;}
+#homeGuideModal .guide-steps{display:grid;gap:10px;margin:0 0 18px;}
+#homeGuideModal .guide-step{display:flex;gap:11px;align-items:flex-start;background:#faf6fb;border:1px solid #eee3f0;border-radius:16px;padding:12px 13px;}
+#homeGuideModal .guide-num{flex:0 0 28px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#8f76a5;color:#fff;font-weight:700;font-size:14px;}
+#homeGuideModal .guide-step b{display:block;font-size:14px;margin-bottom:2px;}
+#homeGuideModal .guide-step span{font-size:12px;line-height:1.5;color:#7b7180;}
+#homeGuideModal .guide-note{text-align:center;font-size:12px;line-height:1.6;color:#9a909e;margin:0 0 15px;}
+#homeGuideModal .guide-close{width:100%;border:0;border-radius:18px;padding:14px 12px;background:#8f76a5;color:#fff;font-size:16px;font-weight:700;}
+#homeGuideModal .guide-close:active{transform:scale(.99);}
+@media (display-mode: standalone){#homeGuideModal{display:none!important;}}
+</style>
 </head>
 <body>
+<div id="homeGuideModal" role="dialog" aria-modal="true" aria-labelledby="homeGuideTitle">
+  <div class="home-guide-card">
+    <h2 id="homeGuideTitle">📱 最初にホーム画面へ追加してください</h2>
+    <p class="guide-lead">CoStockは、最初にホーム画面へ追加してから使うのがおすすめです。<br><b>追加前はアイテムや保管場所を登録しないでください。</b></p>
+    <div class="guide-steps">
+      <div class="guide-step"><div class="guide-num">1</div><div><b>Safariの「共有」ボタンをタップ</b><span>画面下の □↑ から共有メニューを開きます。</span></div></div>
+      <div class="guide-step"><div class="guide-num">2</div><div><b>「ホーム画面に追加」を選択</b><span>CoStockをiPhoneのホーム画面に追加します。</span></div></div>
+      <div class="guide-step"><div class="guide-num">3</div><div><b>ホーム画面のCoStockから起動</b><span>それからアイテム登録・保管場所登録を始めてください。</span></div></div>
+    </div>
+    <p class="guide-note">※すでにホーム画面からCoStockを開いている場合、この案内は表示されません。</p>
+    <button class="guide-close" type="button" onclick="closeHomeGuide()">ホーム画面に追加してから使う</button>
+  </div>
+</div>
+
 <header><h1><span style="letter-spacing:.02em">CoStock</span><span style="font-size:.7em;margin-left:5px"></span></h1><div class="tag">コスプレ衣装・荷物管理</div></header>
 <main>
 <input id="search" class="search" placeholder="🔍 衣装・キャラ・場所を検索">
@@ -689,7 +719,26 @@ $("search").addEventListener("input",render);render();
     reader.readAsText(file);
   }
 
-  document.addEventListener("DOMContentLoaded", function(){
+  
+function isStandalone(){
+  return window.matchMedia && window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+function closeHomeGuide(){
+  const m=$("homeGuideModal");
+  if(m) m.style.display="none";
+  try{localStorage.setItem("costock_home_guide_seen","1");}catch(e){}
+}
+function showHomeGuideIfNeeded(){
+  if(isStandalone()) return;
+  try{
+    if(localStorage.getItem("costock_home_guide_seen")) return;
+  }catch(e){}
+  const m=$("homeGuideModal");
+  if(m) m.style.display="flex";
+}
+
+document.addEventListener("DOMContentLoaded", function(){
+    showHomeGuideIfNeeded();
     const exportBtn = document.getElementById("backupExportBtn");
     const importBtn = document.getElementById("backupImportBtn");
     const input = document.getElementById("backupFileInput");
@@ -724,7 +773,7 @@ $("search").addEventListener("input",render);render();
 </style>
 
 <footer class="creator-footer">
-<div class="app-version">CoStock v1.5.8</div>
+<div class="app-version">CoStock v1.6.2</div>
 
   製作者 <a href="https://x.com/irohautkt_cos" target="_blank" rel="noopener noreferrer">@irohautkt_cos</a>
 </footer>
