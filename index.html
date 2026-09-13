@@ -188,24 +188,17 @@ select#locationParent {
 @media (display-mode: standalone){#homeGuideModal{display:none!important;}}
 </style>
 
-<style id="costock-guide-balance">
-#homeGuideModal h2{
-  font-size:22px;
-  line-height:1.5;
-  letter-spacing:0;
-  white-space:normal;
-  word-break:keep-all;
-  overflow-wrap:normal;
-  margin-bottom:12px;
-}
-#homeGuideModal .guide-lead{
-  line-height:1.75;
-}
+<style id="costock-guide-wrap-fix">
+#homeGuideModal h2,
+#homeGuideModal .guide-lead,
 #homeGuideModal .guide-step b,
 #homeGuideModal .guide-step span,
 #homeGuideModal .guide-note{
-  word-break:keep-all;
-  overflow-wrap:normal;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+#homeGuideModal h2{
+  line-height:1.5;
 }
 </style>
 
@@ -213,7 +206,7 @@ select#locationParent {
 <body>
 <div id="homeGuideModal" role="dialog" aria-modal="true" aria-labelledby="homeGuideTitle">
   <div class="home-guide-card">
-    <h2 id="homeGuideTitle">📱 最初にホーム画面へ<br>追加してください</h2>
+    <h2 id="homeGuideTitle">📱 最初にホーム画面へ追加してください</h2>
     <p class="guide-lead">CoStockは、最初にホーム画面へ追加してから使うのがおすすめです。<br><b>追加前はアイテムや保管場所を登録しないでください。</b></p>
     <div class="guide-steps">
       <div class="guide-step"><div class="guide-num">1</div><div><b>Safariの「共有」ボタンをタップ</b><span>画面下の □↑ から共有メニューを開きます。</span></div></div>
@@ -221,8 +214,8 @@ select#locationParent {
       <div class="guide-step"><div class="guide-num">3</div><div><b>ホーム画面のCoStockから起動</b><span>それからアイテム登録・保管場所登録を始めてください。</span></div></div>
     </div>
     <p class="guide-note">※すでにホーム画面からCoStockを開いている場合、この案内は表示されません。</p>
-    <button class="guide-close" type="button" onclick="openHomeShare()">📱 ホーム画面に追加してから使う</button>
-    <button class="guide-browser" type="button" onclick="useInBrowser()">ホームに追加せずブラウザで使う</button>
+    <button class="guide-close" type="button">📱 ホーム画面に追加してから使う</button>
+    <button class="guide-browser" type="button">ホームに追加せずブラウザで使う</button>
   </div>
 </div>
 
@@ -745,55 +738,76 @@ $("search").addEventListener("input",render);render();
 
   
 function isStandalone(){
-  return window.matchMedia && window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
 }
-function openHomeShare(){
-  // Safariでは「ホーム画面に追加」そのものをWebページから直接開くAPIはありません。
-  // まずユーザー操作からWeb Shareを試し、非対応ならSafariの手順を案内します。
-  if(typeof navigator.share === "function"){
-    navigator.share({
-      title: "CoStock",
-      text: "CoStockをホーム画面に追加",
-      url: window.location.href
-    }).then(function(){
-      closeHomeGuide();
-    }).catch(function(e){
-      if(e && e.name === "AbortError") return;
-      alert("共有メニューを開けませんでした。Safari下部の「共有」→「ホーム画面に追加」から追加してください。");
-    });
-  }else{
-    alert("このブラウザでは共有メニューを自動で開けません。Safari下部の「共有」→「ホーム画面に追加」から追加してください。");
-  }
-}
-function useInBrowser(){
-  const m=document.getElementById("homeGuideModal");
+function closeHomeGuide(save){
+  var m=document.getElementById("homeGuideModal");
   if(m){
     m.style.display="none";
     m.setAttribute("aria-hidden","true");
   }
-  try{ localStorage.setItem("costock_home_guide_seen","1"); }catch(e){}
-}
-function closeHomeGuide(save=true){
-  const m=document.getElementById("homeGuideModal");
-  if(m){
-    m.style.display="none";
-    m.setAttribute("aria-hidden","true");
-  }
-  if(save){
+  if(save !== false){
     try{ localStorage.setItem("costock_home_guide_seen","1"); }catch(e){}
   }
 }
+function useInBrowser(){
+  closeHomeGuide(true);
+}
+function openHomeShare(){
+  // Safari does not provide a reliable web API to open Safari's own Share sheet.
+  // Try Web Share when available; otherwise show the exact manual path.
+  if(typeof navigator !== "undefined" && typeof navigator.share === "function"){
+    navigator.share({
+      title:"CoStock",
+      text:"CoStockをホーム画面に追加",
+      url:window.location.href
+    }).then(function(){
+      closeHomeGuide(true);
+    }).catch(function(err){
+      if(!err || err.name !== "AbortError"){
+        alert("Safari下部の「共有」→「ホーム画面に追加」から追加してください📱");
+      }
+    });
+  }else{
+    alert("Safari下部の「共有」→「ホーム画面に追加」から追加してください📱");
+  }
+}
+window.openHomeShare = openHomeShare;
+window.useInBrowser = useInBrowser;
 function showHomeGuideIfNeeded(){
   if(isStandalone()) return;
   try{
     if(localStorage.getItem("costock_home_guide_seen")) return;
   }catch(e){}
-  const m=$("homeGuideModal");
-  if(m){ m.style.display="flex"; m.setAttribute("aria-hidden","false"); }
+  var m=document.getElementById("homeGuideModal");
+  if(m){
+    m.style.display="flex";
+    m.setAttribute("aria-hidden","false");
+  }
 }
 
 document.addEventListener("DOMContentLoaded", function(){
     showHomeGuideIfNeeded();
+
+    var guide = document.getElementById("homeGuideModal");
+    var addBtn = guide ? guide.querySelector(".guide-close") : null;
+    var browserBtn = guide ? guide.querySelector(".guide-browser") : null;
+
+    if(addBtn){
+      addBtn.addEventListener("click", function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        openHomeShare();
+      }, false);
+    }
+    if(browserBtn){
+      browserBtn.addEventListener("click", function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        useInBrowser();
+      }, false);
+    }
+
     const exportBtn = document.getElementById("backupExportBtn");
     const importBtn = document.getElementById("backupImportBtn");
     const input = document.getElementById("backupFileInput");
@@ -828,70 +842,9 @@ document.addEventListener("DOMContentLoaded", function(){
 </style>
 
 <footer class="creator-footer">
-<div class="app-version">CoStock v1.6.2</div>
+<div class="app-version">CoStock v1.6.11</div>
 
   製作者 <a href="https://x.com/irohautkt_cos" target="_blank" rel="noopener noreferrer">@irohautkt_cos</a>
 </footer>
-
-
-<script id="costock-guide-final">
-(function(){
-  function closeGuide(){
-    var m=document.getElementById("homeGuideModal") || document.getElementById("homeGuide");
-    if(m){
-      m.style.display="none";
-      m.setAttribute("aria-hidden","true");
-    }
-    try{localStorage.setItem("costock_home_guide_seen","1");}catch(e){}
-  }
-
-  function openShare(){
-    // A web page cannot reliably invoke Safari's own Share sheet.
-    // If Web Share is available, use it; otherwise give an immediate, visible
-    // instruction rather than leaving the button apparently dead.
-    if(navigator.share){
-      navigator.share({
-        title:"CoStock",
-        text:"CoStockをホーム画面に追加",
-        url:location.href
-      }).then(function(){
-        closeGuide();
-      }).catch(function(err){
-        if(!err || err.name!=="AbortError"){
-          alert("Safari下部の「共有」→「ホーム画面に追加」から追加してください📱");
-        }
-      });
-    }else{
-      alert("Safari下部の「共有」→「ホーム画面に追加」から追加してください📱");
-    }
-  }
-
-  function bind(){
-    var add=document.getElementById("homeGuideAdd");
-    var browser=document.getElementById("homeGuideBrowser");
-
-    if(add){
-      add.addEventListener("click",function(e){
-        e.preventDefault();
-        e.stopPropagation();
-        openShare();
-      },false);
-    }
-    if(browser){
-      browser.addEventListener("click",function(e){
-        e.preventDefault();
-        e.stopPropagation();
-        closeGuide();
-      },false);
-    }
-  }
-
-  if(document.readyState==="loading"){
-    document.addEventListener("DOMContentLoaded",bind);
-  }else{
-    bind();
-  }
-})();
-</script>
 
 </body></html>
