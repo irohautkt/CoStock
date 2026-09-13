@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#7357e8"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="CosStock">
+<link rel="manifest" href="manifest.json"><title>CosStock</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#fbf9ff 0%,#f7f5fc 48%,#fbfaff 100%);color:#29243a;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif}
+header{background:linear-gradient(135deg,#7560e8 0%,#a384f4 100%);color:#fff;padding:28px 20px 24px;border-radius:0 0 30px 30px;box-shadow:0 10px 28px #7357e822;position:relative;overflow:hidden}header:after{content:"✦  ୨୧  ✦";position:absolute;right:18px;top:12px;font-size:18px;opacity:.32;letter-spacing:6px}
+h1{margin:0;font-size:28px;letter-spacing:.3px}.tag{font-size:12px;opacity:.88;margin-top:4px}
+main{max-width:760px;margin:auto;padding:14px 15px 90px}.search{width:100%;border:1px solid #eee9fb;border-radius:18px;padding:16px 17px;font-size:16px;box-shadow:0 6px 22px #7357e80d;background:#fff;margin-top:2px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:13px 0}.stat{background:#fff;border:1px solid #eeeafa;border-radius:18px;padding:13px;box-shadow:0 4px 16px #7357e808}.stat b{display:block;font-size:22px}.stat span{font-size:11px;color:#777}
+.row{display:flex;justify-content:space-between;align-items:center}.row h2{font-size:18px;letter-spacing:.2px}.btn{border:0;border-radius:14px;padding:11px 14px;font-weight:700;background:linear-gradient(135deg,#7357e8,#9070ef);color:#fff;box-shadow:0 5px 14px #7357e822}.ghost{background:#f0ecfb;color:#604ba0;box-shadow:none}
+.item{background:#fff;border-radius:16px;padding:12px;margin:9px 0;display:flex;gap:12px;box-shadow:0 2px 12px #00000008}.thumb{width:72px;height:72px;border-radius:12px;object-fit:cover;background:#eceaf0}.name{font-weight:700}.small{font-size:12px;color:#777;margin-top:3px}.ok{color:#168c48}.warn{color:#bd7500}.bad{color:#c93636}.empty{text-align:center;padding:35px;color:#888}
+.fab{position:fixed;right:18px;bottom:18px;border:0;border-radius:99px;background:#7357e8;color:#fff;padding:15px 20px;font-weight:800;box-shadow:0 8px 25px #7357e855}
+.modal{display:none;position:fixed;inset:0;background:#0007;align-items:center;justify-content:center;z-index:5;padding:10px}.sheet{background:#fff;border-radius:22px;width:100%;max-width:760px;max-height:calc(100dvh - 20px);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:20px 20px calc(20px + env(safe-area-inset-bottom))}.sheet h2{margin:0 0 12px}
+label{display:block;font-size:12px;font-weight:700;margin:11px 0 5px}input,select,textarea{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:15px;background:#fff}textarea{min-height:70px}.preview{width:100%;max-height:210px;object-fit:cover;border-radius:13px;margin-top:8px;display:none}.actions{display:flex;gap:8px;margin-top:15px}.actions button{flex:1}
+.detail{background:#fff;border-radius:18px;padding:16px;margin-top:12px}.detail img{width:100%;max-height:300px;object-fit:cover;border-radius:14px}.pill{display:inline-block;border-radius:99px;padding:5px 9px;background:#eeeaf8;font-size:12px;margin:4px 4px 0 0}
+.shoot-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:7px 0 14px}
+.shoot-option{display:flex;align-items:center;gap:7px;border:1px solid #e4e1ea;background:#fff;border-radius:12px;padding:10px;font-size:13px}
+.shoot-option input{width:18px;height:18px;accent-color:#7357e8}
+.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:7px 0 14px}
+.type-card{border:2px solid #e7e3f5;background:#fff;border-radius:15px;padding:13px 10px;text-align:left;min-height:105px;display:flex;flex-direction:column;gap:5px}
+.type-card b{font-size:14px}.type-card span{font-size:11px;color:#777;line-height:1.45}.type-card.selected{border-color:#7357e8;background:#f4f0ff}
+.location-card{background:#fff;border:1px solid #eeeafa;border-radius:19px;padding:11px 12px;margin:9px 0;box-shadow:0 5px 18px #7357e80b}
+.location-card.level-1{margin:8px 0 8px 14px;border-left:3px solid #e5ddfb;box-shadow:none;background:#fcfaff}
+.location-card.level-2{margin:8px 0 8px 28px;border-left:3px solid #eee9fb;box-shadow:none;background:#fff}
+.location-head{display:flex;align-items:center;gap:8px}.location-toggle{width:30px;height:30px;border:0;border-radius:10px;background:#f3effc;color:#604ba0;font-size:18px;font-weight:700;flex:0 0 30px}.location-toggle.empty{visibility:hidden}.location-icon{font-size:22px}.location-name{font-weight:800;font-size:16px;flex:1}.location-path{font-size:11px;color:#91899f;margin:2px 0 0 68px}.location-actions{display:flex;gap:7px;margin-top:9px;padding-left:38px}.location-actions button{flex:1}.location-children{margin-top:5px;padding-left:5px;position:relative}.location-children:before{content:"";position:absolute;left:7px;top:0;bottom:12px;border-left:2px solid #eee8fb}.location-children > .location-card{position:relative}.location-children > .location-card:before{content:"";position:absolute;left:-8px;top:24px;width:12px;border-top:2px solid #eee8fb}
+
+.type-title{font-size:13px;font-weight:800;color:#6b5aa8;margin:2px 0 8px}
+.type-card{min-height:92px;transition:.15s;box-shadow:0 4px 14px rgba(115,87,232,.06)}
+.type-card.selected{box-shadow:0 6px 18px rgba(115,87,232,.12);transform:translateY(-1px)}
+.location-head{cursor:pointer;min-height:42px}
+.location-card.level-1{margin-left:18px}
+.location-card.level-2{margin-left:36px}
+.location-children{margin-left:4px}
+
+.photo-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 4px}
+.photo-btn{border:0;border-radius:14px;padding:12px 8px;background:#f0ebff;color:#5d49a8;font-weight:700;font-size:14px}
+.photo-btn:active{transform:scale(.98)}
+</style>
+
+<style id="cosstock-kawaii-v13">
+:root{
+  --lav:#a997e8;--lav2:#eee9ff;--lav3:#dcd3ff;--pink:#f5c9df;
+  --ink:#4d4562;--muted:#8b849c;--card:#fff;--bg:#faf8ff;
+  --shadow:0 8px 24px rgba(101,82,150,.10);
+}
+html,body{background:var(--bg)!important;color:var(--ink)!important}
+body{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif!important}
+header,.header,.top,.app-header{
+  background:linear-gradient(135deg,#b7a8f0 0%,#d7c9f7 55%,#f0d8e9 100%)!important;
+  border-radius:0 0 28px 28px!important;
+  box-shadow:0 8px 22px rgba(121,98,170,.12)!important;
+}
+button{font-family:inherit!important}
+.card,.item,.location,.location-card,.stat,.panel,.modal-content,.form-card{
+  border:1px solid rgba(169,151,232,.16)!important;
+  border-radius:20px!important;
+  box-shadow:var(--shadow)!important;
+}
+input,select,textarea{
+  border:1px solid #e2dcf3!important;
+  border-radius:14px!important;
+  background:#fff!important;
+  color:var(--ink)!important;
+}
+input:focus,select:focus,textarea:focus{
+  outline:none!important;border-color:#ad9ce9!important;
+  box-shadow:0 0 0 3px rgba(173,156,233,.16)!important;
+}
+.primary,.primary-btn,.btn.primary,.add-btn{
+  background:linear-gradient(135deg,#9e8be0,#c2b4f2)!important;
+  border:0!important;border-radius:15px!important;
+  box-shadow:0 6px 14px rgba(129,105,185,.20)!important;
+}
+.secondary,.secondary-btn,.ghost{
+  background:#f3efff!important;color:#66568e!important;
+  border:1px solid #e1d9f5!important;border-radius:15px!important;
+}
+.section-title{color:#5d4d80!important;font-weight:800!important}
+.name{color:#51476a!important;font-weight:800!important}
+.small{color:var(--muted)!important}
+.pill{background:#f2edff!important;color:#67578d!important;border:0!important;border-radius:999px!important}
+.photo-btn{
+  background:linear-gradient(135deg,#f5efff,#fff1f7)!important;
+  border:1px solid #e3d8f2!important;color:#67578d!important;
+}
+nav,.bottom-nav,.tabs{
+  background:rgba(255,255,255,.94)!important;
+  border-top:1px solid #eee8f7!important;
+  box-shadow:0 -5px 20px rgba(90,70,130,.07)!important;
+}
+.nav-item.active,.tab.active{color:#806cc0!important}
+.modal{backdrop-filter:blur(5px)!important}
+</style>
+
+
+<style id="cosstock-v14-icons">
+/* CosStock v1.4.1 — emoji-free icon language */
+:root{--ink:#4a4250;--muted:#8b8290;--line:#e8e1ea;--accent:#b98da9;--accent2:#d9b8c9;}
+body{color:var(--ink);background:linear-gradient(180deg,#fbf9fc 0%,#f7f2f8 100%);}
+button,input,select,textarea{font-family:inherit;}
+button{letter-spacing:.01em;}
+.icon{display:inline-flex;width:1.15em;height:1.15em;vertical-align:-.18em;margin-right:.35em;flex:none;}
+.icon svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.app-title{letter-spacing:.04em;}
+.card,.modal-card{border:1px solid rgba(185,141,169,.14);box-shadow:0 8px 28px rgba(86,63,87,.06);}
+.btn-primary{box-shadow:0 6px 16px rgba(185,141,169,.18);}
+</style>
+
+</head>
+<body>
+<header><h1><span style="letter-spacing:.02em">CosStock</span><span style="font-size:.7em;margin-left:5px"></span></h1><div class="tag">コスプレ衣装・荷物管理</div></header>
+<main>
+<input id="search" class="search" placeholder="🔍 衣装・キャラ・場所を検索">
+<div class="grid">
+<div class="stat"><b id="count">0</b><span>アイテム</span></div>
+<div class="stat"><b id="warn">0</b><span>要メンテ</span></div>
+<div class="stat"><b id="out">0</b><span>持ち出し中</span></div>
+</div>
+<div class="row"><h2> アイテム</h2><button class="btn ghost" onclick="openForm()">＋ 登録</button></div>
+<div id="list"></div>
+
+<div class="row" style="margin-top:24px"><h2> 保管場所</h2><button class="btn ghost" onclick="openLocationForm()">＋ 場所登録</button></div>
+<div id="locationList"></div>
+</main>
+
+<div id="modal" class="modal" onclick="if(event.target===this)closeForm()"><div class="sheet">
+<h2 id="formTitle">アイテムを登録</h2>
+<input type="hidden" id="itemType" value="character">
+<div class="type-title">登録するアイテムを選択</div>
+<div id="typeSelector" class="type-grid">
+<button type="button" id="typeCharacter" class="type-card selected" onclick="setItemType('character')"><b>🎀 キャラクターアイテム</b><span>作品・キャラ・衣装を登録</span></button>
+<button type="button" id="typeCommon" class="type-card" onclick="setItemType('common')"><b>📦 共通アイテム</b><span>キャラに紐づかない共通物</span></button>
+</div>
+<form id="form">
+<div id="commonNameField">
+<label>アイテム名</label><input id="name" placeholder="例：白手袋、黒パニエ、黒タイツ">
+<div class="small" style="margin-top:5px">共通アイテムは名前を付けて管理します。</div>
+</div>
+<div id="characterFields">
+<label>作品名</label><input id="series" placeholder="例：hololive">
+<label>キャラ名</label><input id="character" placeholder="例：Gigi Murin">
+<label>衣装名</label><input id="outfitName" placeholder="例：通常衣装・歌ってみた衣装">
+</div>
+<label>種類</label><select id="category"></select>
+<label>コンディション</label><select id="condition"><option>新品</option><option selected>良好</option><option>使用感あり</option><option>要メンテナンス</option><option>要修理</option><option>使用不可</option></select>
+<label>ステータス</label><select id="status"><option>保管中</option><option>持ち出し中</option><option>クリーニング中</option><option>修理中</option><option>製作中</option><option>貸出中</option></select>
+<div id="shootingStatusField">
+<label>撮影ステータス <span class="small">（複数選択可）</span></label>
+<div class="shoot-grid">
+<label class="shoot-option"><input type="checkbox" name="shootingStatus" value="スタジオ・ロケ">スタジオ・ロケ</label>
+<label class="shoot-option"><input type="checkbox" name="shootingStatus" value="イベント">イベント</label>
+<label class="shoot-option"><input type="checkbox" name="shootingStatus" value="宅コス">宅コス</label>
+<label class="shoot-option"><input type="checkbox" name="shootingStatus" value="未撮影">未撮影</label>
+</div></div>
+<label>保管場所</label><select id="location"><option value="">未登録</option></select>
+<div class="small" style="margin-top:5px">保管場所は「 保管場所」から登録できます。</div>
+<label>写真</label>
+<div class="photo-actions">
+  <button type="button" class="photo-btn" onclick="document.getElementById('photoLibrary').click()">🖼️ 写真を選択</button>
+</div>
+<input id="photoLibrary" type="file" accept="image/*" style="display:none">
+<img id="preview" class="preview">
+<label>メンテナンス・メモ</label><textarea id="notes" placeholder="例：尻尾を補修する、簪あり"></textarea>
+<div class="actions"><button type="button" class="btn ghost" onclick="closeForm()">キャンセル</button><button class="btn">保存</button></div>
+</form></div></div>
+
+<div id="locationModal" class="modal" onclick="if(event.target===this)closeLocationForm()"><div class="sheet">
+<h2 id="locationFormTitle">保管場所を登録</h2>
+<form id="locationForm">
+<label>場所名</label><input id="locationName" required placeholder="例：衣装部屋・棚A・BOX03">
+<label>親の場所（任意）</label><select id="locationParent"><option value="">なし（最上位）</option></select>
+<label>メモ</label><textarea id="locationNotes" placeholder="例：季節衣装を保管"></textarea>
+<div class="actions"><button type="button" class="btn ghost" onclick="closeLocationForm()">キャンセル</button><button class="btn">保存</button></div>
+</form></div></div>
+
+<div id="detailModal" class="modal" onclick="if(event.target===this)closeDetail()"><div class="sheet"><div class="row"><h2>アイテム詳細</h2><button class="btn ghost" onclick="closeDetail()">閉じる</button></div><div id="detail"></div></div></div>
+
+<script>
+const KEY="cosstock_v02";
+const LOC_KEY="cosstock_locations_v03";
+let items=JSON.parse(localStorage.getItem(KEY)||"[]");
+let locations=JSON.parse(localStorage.getItem(LOC_KEY)||"[]");
+let photo="",editing=null,editingLocation=null;
+const $=id=>document.getElementById(id);
+function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function persist(){localStorage.setItem(KEY,JSON.stringify(items));render()}
+function cls(c){return ["新品","良好"].includes(c)?"ok":["使用感あり","要メンテナンス"].includes(c)?"warn":"bad"}
+// v0.2で自由入力されていた保管場所はそのまま文字列として残ります。
+function saveLocations(){localStorage.setItem(LOC_KEY,JSON.stringify(locations))}
+function locationPath(id){
+  const seen=new Set(), parts=[];
+  let cur=locations.find(x=>x.id===id);
+  while(cur && !seen.has(cur.id)){
+    seen.add(cur.id); parts.unshift(cur.name);
+    cur=locations.find(x=>x.id===cur.parentId);
+  }
+  return parts.join(" ＞ ");
+}
+function populateLocationSelect(selected=""){
+  const sel=$("location");
+  if(!sel)return;
+  sel.innerHTML='<option value="">未登録</option>'+locations.map(x=>`<option value="${x.id}">${esc(locationPath(x.id))}</option>`).join("");
+  sel.value=selected||"";
+}
+function populateParentSelect(selected=""){
+  const sel=$("locationParent");
+  sel.innerHTML='<option value="">なし（最上位）</option>'+locations.filter(x=>x.id!==editingLocation).map(x=>`<option value="${x.id}">${esc(locationPath(x.id))}</option>`).join("");
+  sel.value=selected||"";
+}
+const expandedLocations=new Set();
+function toggleLocation(id){ if(expandedLocations.has(String(id))) expandedLocations.delete(String(id)); else expandedLocations.add(String(id)); renderLocations(); }
+function locationIcon(name,level){ const n=String(name); if(level===0) return ""; if(n.includes("棚")) return ""; if(n.includes("ケース")||n.includes("BOX")||n.includes("収納")) return ""; if(n.includes("車")) return ""; if(n.includes("実家")) return "🏢"; return ""; }
+let locationTreeInitialized=false;
+function renderLocations(){
+  const el=$("locationList");
+  if(!locations.length){ el.innerHTML='<div class="empty">まだ保管場所がありません。<br>「＋ 場所登録」から作成しよう！</div>'; return; }
+  const childrenOf=id=>locations.filter(x=>String(x.parentId||"")===String(id));
+  // 初回だけ親を開く。以後はユーザーの開閉状態を維持する。
+  if(!locationTreeInitialized){
+    locations.filter(x=>!x.parentId || !locations.some(p=>String(p.id)===String(x.parentId))).forEach(x=>expandedLocations.add(String(x.id)));
+    locationTreeInitialized=true;
+  }
+  function node(x,level=0){
+    const children=childrenOf(x.id);
+    const used=items.filter(i=>String(i.location)===String(x.id)).length;
+    const expanded=expandedLocations.has(String(x.id));
+    return `<div class="location-card level-${Math.min(level,2)}">
+      <div class="location-head" onclick="${children.length?`toggleLocation(${x.id})`:''}">
+        <button type="button" class="location-toggle ${children.length?'':'empty'}" onclick="event.stopPropagation();${children.length?`toggleLocation(${x.id})`:''}">${children.length?(expanded?'':''):''}</button>
+        <span class="location-icon">${locationIcon(x.name,level)}</span>
+        <div class="location-name">${esc(x.name)}</div><span class="small">${used}件</span>
+      </div>
+      ${level>0?`<div class="location-path">${esc(locationPath(x.id))}</div>`:''}
+      ${x.notes?`<div class="small" style="margin:5px 0 0 68px">${esc(x.notes)}</div>`:''}
+      <div class="location-actions"><button class="btn ghost" onclick="event.stopPropagation();openLocationForm(${x.id})">編集</button><button class="btn ghost" onclick="event.stopPropagation();deleteLocation(${x.id})">削除</button></div>
+      ${children.length&&expanded?`<div class="location-children">${children.map(c=>node(c,level+1)).join('')}</div>`:''}
+    </div>`;
+  }
+  const roots=locations.filter(x=>!x.parentId || !locations.some(p=>String(p.id)===String(x.parentId)));
+  el.innerHTML=roots.map(x=>node(x,0)).join('');
+}
+function itemDisplayName(x){
+  if(x.itemType==="common") return x.name || "名称未設定";
+  const parts=[x.series,x.character,x.outfitName].filter(Boolean);
+  return parts.length ? parts.join(" ・ ") : (x.name || "キャラクターアイテム");
+}
+function render(){
+ let q=$("search").value.toLowerCase();
+ let a=items.filter(x=>(itemDisplayName(x)+x.name+x.series+x.character+x.outfitName+locationPath(Number(x.location))+x.category+x.notes).toLowerCase().includes(q));
+ $("count").textContent=items.length;
+ $("warn").textContent=items.filter(x=>["要メンテナンス","要修理","使用不可"].includes(x.condition)).length;
+ $("out").textContent=items.filter(x=>x.status==="持ち出し中").length;
+ $("list").innerHTML=a.length?a.map(x=>`<div class="item" onclick="showDetail(${x.id})">
+ ${x.photo?`<img class="thumb" src="${x.photo}">`:`<div class="thumb"></div>`}
+ <div><div class="name">${esc(itemDisplayName(x))}</div><div class="small">${x.itemType==="common"?" 共通アイテム":" キャラクターアイテム"}</div>
+ ${x.itemType==="common"?"":`<div class="small">${(x.shootingStatus||[]).map(s=>esc(s)).join("　")}</div>`}
+ <div class="small ${cls(x.condition)}">● ${esc(x.condition)}　/　${esc(x.status)}</div><div class="small"> ${esc(x.location?locationPath(Number(x.location)):"場所未登録")}</div></div></div>`).join(""):`<div class="empty">まだアイテムがありません。<br>＋アイテム登録から最初の1件を登録しよう！</div>`;
+ renderLocations();
+}
+function setItemType(type, clearFields=true){
+  if(type==='cosplay') type='character';
+  $("itemType").value=type;
+  $("typeCharacter").classList.toggle("selected",type==="character");
+  $("typeCommon").classList.toggle("selected",type==="common");
+  $("characterFields").style.display=type==="character"?"block":"none";
+  $("commonNameField").style.display=type==="common"?"block":"none";
+  $("shootingStatusField").style.display=type==="character"?"block":"none";
+  $("name").required=type==="common";
+  const category=$("category");
+  const current=category.value;
+  const opts=type==="character"
+    ? ["衣装","ウィッグ","靴","キャラクター小物","その他"]
+    : ["共通小物","撮影機材","販売物","裁縫・製作用品","その他"];
+  category.innerHTML=opts.map(v=>`<option>${v}</option>`).join('');
+  if(opts.includes(current)) category.value=current;
+  if(type==="common" && clearFields){
+    $("series").value=""; $("character").value=""; $("outfitName").value="";
+  }
+  if(type==="character" && clearFields){
+    $("name").value="";
+  }
+}
+function openForm(id=null){
+  editing=id;
+  $("formTitle").textContent=id?"アイテムを編集":"アイテムを登録";
+  $("modal").style.display="flex";
+  if(id){
+    let x=items.find(i=>i.id===id);
+    for(let k of ["name","series","character","outfitName","condition","status","notes"]) $(k).value=x[k]||"";
+    document.querySelectorAll('input[name="shootingStatus"]').forEach(c=>c.checked=(x.shootingStatus||[]).includes(c.value));
+    setItemType(x.itemType || ((x.series||x.character) ? "character" : "common"), false);
+    populateLocationSelect(x.location||"");
+    $("category").value=x.category||$("category").options[0]?.value;
+    photo=x.photo||""; $("preview").src=photo; $("preview").style.display=photo?"block":"none";
+  }else{
+    $("form").reset();
+    setItemType("character", false);
+    $("name").value="";
+    $("series").value=""; $("character").value=""; $("outfitName").value="";
+    document.querySelectorAll('input[name="shootingStatus"]').forEach(c=>c.checked=false);
+    populateLocationSelect("");
+    photo=""; $("preview").style.display="none";
+  }
+}
+function closeForm(){$("modal").style.display="none";$("form").reset();photo="";editing=null;$("preview").style.display="none"}
+function handlePhotoFile(f){
+  if(!f)return;
+  let r=new FileReader();
+  r.onload=()=>{
+    photo=r.result;
+    $("preview").src=photo;
+    $("preview").style.display="block";
+  };
+  r.readAsDataURL(f);
+}
+$("photoCamera").addEventListener("change",e=>{
+  handlePhotoFile(e.target.files && e.target.files[0]);
+  e.target.value="";
+});
+$("photoLibrary").addEventListener("change",e=>{
+  handlePhotoFile(e.target.files && e.target.files[0]);
+  e.target.value="";
+});
+$("form").addEventListener("submit",e=>{
+ e.preventDefault();
+ const type=$('itemType').value;
+ const commonName=$('name').value.trim();
+ if(type==="common" && !commonName){
+   alert("共通アイテム名を入力してください。\n例：白手袋、黒パニエ");
+   $("name").focus();
+   return;
+ }
+ let d={
+   itemType:type,
+   name:type==="common"?commonName:"",
+   series:type==="character"?$('series').value.trim():"",
+   character:type==="character"?$('character').value.trim():"",
+   outfitName:type==="character"?$('outfitName').value.trim():"",
+   category:$('category').value,
+   condition:$('condition').value,
+   status:$('status').value,
+   location:$('location').value,
+   shootingStatus:type==="character"?Array.from(document.querySelectorAll('input[name="shootingStatus"]:checked')).map(c=>c.value):[],
+   notes:$('notes').value,
+   photo,
+   updated:new Date().toISOString()
+ };
+ if(editing){Object.assign(items.find(x=>x.id===editing),d)}else{items.unshift({...d,id:Date.now(),created:new Date().toISOString()})}persist();closeForm()})
+function openLocationForm(id=null){
+  editingLocation=id;
+  $("locationFormTitle").textContent=id?"保管場所を編集":"保管場所を登録";
+  $("locationModal").style.display="flex";
+  if(id){
+    const x=locations.find(v=>v.id===id);
+    $("locationName").value=x.name||"";
+    $("locationNotes").value=x.notes||"";
+    populateParentSelect(x.parentId||"");
+  }else{
+    $("locationForm").reset();
+    populateParentSelect("");
+  }
+}
+function closeLocationForm(){
+  $("locationModal").style.display="none";
+  $("locationForm").reset();
+  editingLocation=null;
+}
+$("locationForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const name=$("locationName").value.trim();
+  const parentId=$("locationParent").value?Number($("locationParent").value):null;
+  if(!name)return;
+  // Prevent circular hierarchy when editing.
+  if(editingLocation && parentId===editingLocation){
+    alert("自分自身を親にはできません。");
+    return;
+  }
+  const d={name,parentId,notes:$("locationNotes").value.trim(),updated:new Date().toISOString()};
+  if(editingLocation){
+    Object.assign(locations.find(x=>x.id===editingLocation),d);
+  }else{
+    locations.push({...d,id:Date.now(),created:new Date().toISOString()});
+  }
+  saveLocations();
+  closeLocationForm();
+  populateLocationSelect("");
+  render();
+});
+function deleteLocation(id){
+  const used=items.some(x=>String(x.location)===String(id));
+  const children=locations.some(x=>x.parentId===id);
+  if(used){
+    alert("この保管場所を使っているアイテムがあります。先にアイテムの保管場所を変更してください。");
+    return;
+  }
+  if(children){
+    alert("子の保管場所があります。先に子の場所を削除・移動してください。");
+    return;
+  }
+  if(confirm("この保管場所を削除しますか？")){
+    locations=locations.filter(x=>x.id!==id);
+    saveLocations();
+    render();
+  }
+}
+
+function showDetail(id){
+  let x=items.find(i=>i.id===id);
+  const isCommon=x.itemType==="common";
+  $("detail").innerHTML=`${x.photo?`<img src="${x.photo}">`:""}<h2>${esc(itemDisplayName(x))}</h2><div class="pill">${esc(x.category)}</div><div class="pill">${esc(x.condition)}</div><div class="pill">${esc(x.status)}</div><div class="detail"><b> 保管場所</b><p>${esc(x.location?locationPath(Number(x.location)):"未登録")}</p>${!isCommon?`<b>作品名</b><p>${esc(x.series||"未登録")}</p><b>キャラ名</b><p>${esc(x.character||"未登録")}</p><b>衣装名</b><p>${esc(x.outfitName||"未登録")}</p>`:""}${x.notes?`<b>📝 メモ</b><p>${esc(x.notes)}</p>`:""}<div class="actions"><button class="btn" onclick="openForm(${id});closeDetail()">編集</button><button class="btn ghost" onclick="toggleOut(${id})">${x.status==="持ち出し中"?"↩ 返却する":"🧳 持ち出す"}</button><button class="btn ghost" onclick="del(${id})">削除</button></div></div>`;
+  $("detailModal").style.display="flex"
+}
+function closeDetail(){$("detailModal").style.display="none"}
+function toggleOut(id){let x=items.find(i=>i.id===id);x.status=x.status==="持ち出し中"?"保管中":"持ち出し中";persist();closeDetail();showDetail(id)}
+function del(id){if(confirm("このアイテムを削除しますか？")){items=items.filter(x=>x.id!==id);persist();closeDetail()}}
+$("search").addEventListener("input",render);render();
+</script>
+
+<!-- CosStock Backup / Restore -->
+<section id="backupSection" class="section" style="margin-top:16px;">
+  <div class="section-title"> データバックアップ</div>
+  <div style="font-size:13px;line-height:1.6;opacity:.8;margin-bottom:10px;">
+    SafariのWebサイトデータを消しても復元できるように、登録データをiPhoneの「ファイル」に保存できます。
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <button type="button" id="backupExportBtn" class="primary-btn"> バックアップを保存</button>
+    <button type="button" id="backupImportBtn" class="secondary-btn"> データを復元</button>
+  </div>
+  <input type="file" id="backupFileInput" accept=".json,application/json" style="display:none;">
+  <div id="backupLastInfo" style="font-size:12px;margin-top:9px;opacity:.7;"></div>
+</section>
+
+
+<script>
+(function(){
+  const ITEM_KEY = "cosstock_v02";
+  const LOCATION_KEY = "cosstock_locations_v03";
+  const BACKUP_INFO_KEY = "cosstock_last_backup";
+
+  function safeParse(key, fallback){
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch(e) {
+      return fallback;
+    }
+  }
+
+  function getData(){
+    return {
+      backupVersion: 1,
+      app: "CosStock",
+      exportedAt: new Date().toISOString(),
+      items: safeParse(ITEM_KEY, []),
+      locations: safeParse(LOCATION_KEY, [])
+    };
+  }
+
+  function updateBackupInfo(){
+    const el = document.getElementById("backupLastInfo");
+    if (!el) return;
+    const raw = localStorage.getItem(BACKUP_INFO_KEY);
+    if (!raw) {
+      el.textContent = "最終バックアップ：まだありません";
+      return;
+    }
+    try {
+      const d = new Date(raw);
+      el.textContent = "最終バックアップ：" + d.toLocaleString("ja-JP");
+    } catch(e) {
+      el.textContent = "最終バックアップ：保存済み";
+    }
+  }
+
+  function downloadBackup(){
+    const data = getData();
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const stamp = new Date();
+    const pad = n => String(n).padStart(2,"0");
+    const filename = "CosStock_backup_" +
+      stamp.getFullYear() + "-" + pad(stamp.getMonth()+1) + "-" + pad(stamp.getDate()) +
+      "_" + pad(stamp.getHours()) + "-" + pad(stamp.getMinutes()) + ".json";
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    localStorage.setItem(BACKUP_INFO_KEY, new Date().toISOString());
+    updateBackupInfo();
+    alert("バックアップファイルを作成しました。\\niPhoneの「ファイル」に保存してください。");
+  }
+
+  function validateBackup(data){
+    if (!data || typeof data !== "object") return false;
+    if (data.app !== "CosStock") return false;
+    if (!Array.isArray(data.items) || !Array.isArray(data.locations)) return false;
+    return true;
+  }
+
+  function restoreFromFile(file){
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(){
+      try {
+        const data = JSON.parse(reader.result);
+        if (!validateBackup(data)) {
+          alert("CosStockのバックアップファイルとして認識できません。");
+          return;
+        }
+        const itemCount = data.items.length;
+        const locationCount = data.locations.length;
+        const ok = confirm(
+          "現在のCosStockデータを置き換えて復元します。\\n\\n" +
+          "アイテム：" + itemCount + "件\\n" +
+          "保管場所：" + locationCount + "件\\n\\n" +
+          "現在のデータは上書きされます。続けますか？"
+        );
+        if (!ok) return;
+
+        localStorage.setItem(ITEM_KEY, JSON.stringify(data.items));
+        localStorage.setItem(LOCATION_KEY, JSON.stringify(data.locations));
+        localStorage.setItem(BACKUP_INFO_KEY, data.exportedAt || new Date().toISOString());
+
+        alert("データを復元しました。");
+        location.reload();
+      } catch(e) {
+        alert("バックアップファイルの読み込みに失敗しました。");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    const exportBtn = document.getElementById("backupExportBtn");
+    const importBtn = document.getElementById("backupImportBtn");
+    const input = document.getElementById("backupFileInput");
+    if (exportBtn) exportBtn.addEventListener("click", downloadBackup);
+    if (importBtn) importBtn.addEventListener("click", () => input && input.click());
+    if (input) input.addEventListener("change", e => {
+      restoreFromFile(e.target.files && e.target.files[0]);
+      e.target.value = "";
+    });
+    updateBackupInfo();
+  });
+})();
+</script>
+
+
+<style>
+.creator-footer{
+  text-align:center;
+  padding:24px 16px 32px;
+  color:#8b8292;
+  font-size:12px;
+  letter-spacing:.04em;
+}
+.creator-footer a{
+  font-weight:600;
+  color:inherit;
+  text-decoration:none;
+}
+.creator-footer a:hover{
+  text-decoration:underline;
+}
+</style>
+
+<footer class="creator-footer">
+  製作者 <a href="https://x.com/irohautkt_cos" target="_blank" rel="noopener noreferrer">@irohautkt_cos</a>
+</footer>
+
+</body></html>
