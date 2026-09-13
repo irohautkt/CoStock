@@ -4,7 +4,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#7357e8"><meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="CosStock">
-<link rel="manifest" href="manifest.json"><title>CosStock</title>
+<link rel="manifest" href="manifest.json"><title>CoStock</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#fbf9ff 0%,#f7f5fc 48%,#fbfaff 100%);color:#29243a;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif}
 header{background:linear-gradient(135deg,#7560e8 0%,#a384f4 100%);color:#fff;padding:28px 20px 24px;border-radius:0 0 30px 30px;box-shadow:0 10px 28px #7357e822;position:relative;overflow:hidden}header:after{content:"✦  ୨୧  ✦";position:absolute;right:18px;top:12px;font-size:18px;opacity:.32;letter-spacing:6px}
@@ -139,9 +139,37 @@ select{
 }
 </style>
 
+
+<style>
+/* Visible dropdown indicator for storage-location selects */
+select#itemLocation,
+select#locationParent {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  background-size: 10px 10px !important;
+  padding-right: 36px !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath d='M2 3l3 4 3-4' fill='none' stroke='%237f7585' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+}
+</style>
+
+
+<style>
+/* Footer spacing */
+.creator-footer{
+  margin-top:32px !important;
+  padding-top:24px !important;
+  padding-bottom:36px !important;
+}
+.creator-footer .app-version{
+  margin-bottom:10px !important;
+}
+</style>
+
 </head>
 <body>
-<header><h1><span style="letter-spacing:.02em">CosStock</span><span style="font-size:.7em;margin-left:5px"></span></h1><div class="tag">コスプレ衣装・荷物管理</div></header>
+<header><h1><span style="letter-spacing:.02em">CoStock</span><span style="font-size:.7em;margin-left:5px"></span></h1><div class="tag">コスプレ衣装・荷物管理</div></header>
 <main>
 <input id="search" class="search" placeholder="🔍 衣装・キャラ・場所を検索">
 <div class="grid">
@@ -598,7 +626,7 @@ $("search").addEventListener("input",render);render();
 </style>
 
 <footer class="creator-footer">
-<div class="app-version">CosStock v1.5.2</div>
+<div class="app-version">CoStock v1.5.5</div>
 
   製作者 <a href="https://x.com/irohautkt_cos" target="_blank" rel="noopener noreferrer">@irohautkt_cos</a>
 </footer>
