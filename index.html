@@ -6,12 +6,12 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="CosStock">
 <link rel="manifest" href="manifest.json"><title>CosStock</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f7f6fb;color:#24212b;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif}
-header{background:linear-gradient(135deg,#7357e8,#9c7bf5);color:#fff;padding:26px 18px 20px;border-radius:0 0 24px 24px}
-h1{margin:0;font-size:26px}.tag{font-size:12px;opacity:.85;margin-top:3px}
-main{max-width:760px;margin:auto;padding:14px 15px 90px}.search{width:100%;border:0;border-radius:14px;padding:15px;font-size:16px;box-shadow:0 3px 16px #0000000b}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:12px 0}.stat{background:#fff;border-radius:14px;padding:12px}.stat b{display:block;font-size:22px}.stat span{font-size:11px;color:#777}
-.row{display:flex;justify-content:space-between;align-items:center}.row h2{font-size:17px}.btn{border:0;border-radius:12px;padding:11px 14px;font-weight:700;background:#7357e8;color:#fff}.ghost{background:#eeeaf8;color:#59459b}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#fbf9ff 0%,#f7f5fc 48%,#fbfaff 100%);color:#29243a;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif}
+header{background:linear-gradient(135deg,#7560e8 0%,#a384f4 100%);color:#fff;padding:28px 20px 24px;border-radius:0 0 30px 30px;box-shadow:0 10px 28px #7357e822;position:relative;overflow:hidden}header:after{content:"✦  ୨୧  ✦";position:absolute;right:18px;top:12px;font-size:18px;opacity:.32;letter-spacing:6px}
+h1{margin:0;font-size:28px;letter-spacing:.3px}.tag{font-size:12px;opacity:.88;margin-top:4px}
+main{max-width:760px;margin:auto;padding:14px 15px 90px}.search{width:100%;border:1px solid #eee9fb;border-radius:18px;padding:16px 17px;font-size:16px;box-shadow:0 6px 22px #7357e80d;background:#fff;margin-top:2px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin:13px 0}.stat{background:#fff;border:1px solid #eeeafa;border-radius:18px;padding:13px;box-shadow:0 4px 16px #7357e808}.stat b{display:block;font-size:22px}.stat span{font-size:11px;color:#777}
+.row{display:flex;justify-content:space-between;align-items:center}.row h2{font-size:18px;letter-spacing:.2px}.btn{border:0;border-radius:14px;padding:11px 14px;font-weight:700;background:linear-gradient(135deg,#7357e8,#9070ef);color:#fff;box-shadow:0 5px 14px #7357e822}.ghost{background:#f0ecfb;color:#604ba0;box-shadow:none}
 .item{background:#fff;border-radius:16px;padding:12px;margin:9px 0;display:flex;gap:12px;box-shadow:0 2px 12px #00000008}.thumb{width:72px;height:72px;border-radius:12px;object-fit:cover;background:#eceaf0}.name{font-weight:700}.small{font-size:12px;color:#777;margin-top:3px}.ok{color:#168c48}.warn{color:#bd7500}.bad{color:#c93636}.empty{text-align:center;padding:35px;color:#888}
 .fab{position:fixed;right:18px;bottom:18px;border:0;border-radius:99px;background:#7357e8;color:#fff;padding:15px 20px;font-weight:800;box-shadow:0 8px 25px #7357e855}
 .modal{display:none;position:fixed;inset:0;background:#0007;align-items:flex-end;z-index:5}.sheet{background:#fff;border-radius:22px 22px 0 0;width:100%;max-height:92vh;overflow:auto;padding:20px}.sheet h2{margin:0 0 12px}
@@ -23,8 +23,10 @@ label{display:block;font-size:12px;font-weight:700;margin:11px 0 5px}input,selec
 .type-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:7px 0 14px}
 .type-card{border:2px solid #e7e3f5;background:#fff;border-radius:15px;padding:13px 10px;text-align:left;min-height:105px;display:flex;flex-direction:column;gap:5px}
 .type-card b{font-size:14px}.type-card span{font-size:11px;color:#777;line-height:1.45}.type-card.selected{border-color:#7357e8;background:#f4f0ff}
-.location-card{background:#fff;border-radius:16px;padding:13px;margin:8px 0;box-shadow:0 2px 12px #00000008}
-.location-name{font-weight:700}.location-path{font-size:12px;color:#777;margin-top:3px}.location-actions{display:flex;gap:7px;margin-top:9px}.location-actions button{flex:1}
+.location-card{background:#fff;border:1px solid #eeeafa;border-radius:19px;padding:11px 12px;margin:9px 0;box-shadow:0 5px 18px #7357e80b}
+.location-card.level-1{margin:8px 0 8px 14px;border-left:3px solid #e5ddfb;box-shadow:none;background:#fcfaff}
+.location-card.level-2{margin:8px 0 8px 28px;border-left:3px solid #eee9fb;box-shadow:none;background:#fff}
+.location-head{display:flex;align-items:center;gap:8px}.location-toggle{width:30px;height:30px;border:0;border-radius:10px;background:#f3effc;color:#604ba0;font-size:18px;font-weight:700;flex:0 0 30px}.location-toggle.empty{visibility:hidden}.location-icon{font-size:22px}.location-name{font-weight:800;font-size:16px;flex:1}.location-path{font-size:11px;color:#91899f;margin:2px 0 0 68px}.location-actions{display:flex;gap:7px;margin-top:9px;padding-left:38px}.location-actions button{flex:1}.location-children{margin-top:5px;padding-left:5px;position:relative}.location-children:before{content:"";position:absolute;left:7px;top:0;bottom:12px;border-left:2px solid #eee8fb}.location-children > .location-card{position:relative}.location-children > .location-card:before{content:"";position:absolute;left:-8px;top:24px;width:12px;border-top:2px solid #eee8fb}
 </style>
 </head>
 <body>
@@ -46,10 +48,18 @@ label{display:block;font-size:12px;font-weight:700;margin:11px 0 5px}input,selec
 
 <div id="modal" class="modal" onclick="if(event.target===this)closeForm()"><div class="sheet">
 <h2 id="formTitle">アイテムを登録</h2>
+<input type="hidden" id="itemType" value="cosplay">
+<div id="typeSelector" class="type-grid">
+<button type="button" id="typeCosplay" class="type-card selected" onclick="setItemType('cosplay')"><b>👗 コスプレアイテム</b><span>作品・キャラ・衣装名を登録</span></button>
+<button type="button" id="typeCommon" class="type-card" onclick="setItemType('common')"><b>📦 共通アイテム</b><span>作品・キャラを持たない共通物</span></button>
+</div>
+<div id="cosplayFields">
 <form id="form">
 <label>名前</label><input id="name" required placeholder="例：Gigi 衣装">
 <label>作品</label><input id="series" placeholder="例：hololive">
 <label>キャラクター</label><input id="character" placeholder="例：Gigi Murin">
+<label>衣装名</label><input id="outfitName" placeholder="例：通常衣装・歌ってみた衣装">
+</div>
 <label>種類</label><select id="category"><option>衣装</option><option>ウィッグ</option><option>靴</option><option>キャラクター小物</option><option>共通小物</option><option>撮影機材</option><option>販売物</option><option>裁縫・製作用品</option><option>その他</option></select>
 <label>コンディション</label><select id="condition"><option>新品</option><option selected>良好</option><option>使用感あり</option><option>要メンテナンス</option><option>要修理</option><option>使用不可</option></select>
 <label>ステータス</label><select id="status"><option>保管中</option><option>持ち出し中</option><option>クリーニング中</option><option>修理中</option><option>製作中</option><option>貸出中</option></select>
@@ -111,25 +121,19 @@ function populateParentSelect(selected=""){
   sel.innerHTML='<option value="">なし（最上位）</option>'+locations.filter(x=>x.id!==editingLocation).map(x=>`<option value="${x.id}">${esc(locationPath(x.id))}</option>`).join("");
   sel.value=selected||"";
 }
+const expandedLocations=new Set();
+function toggleLocation(id){ if(expandedLocations.has(String(id))) expandedLocations.delete(String(id)); else expandedLocations.add(String(id)); renderLocations(); }
+function locationIcon(name,level){ const n=String(name); if(level===0) return "🏠"; if(n.includes("棚")) return "🗄️"; if(n.includes("ケース")||n.includes("BOX")||n.includes("収納")) return "📦"; if(n.includes("車")) return "🚗"; if(n.includes("実家")) return "🏢"; return "🎀"; }
 function renderLocations(){
   const el=$("locationList");
-  if(!locations.length){
-    el.innerHTML='<div class="empty">まだ保管場所がありません。<br>「＋ 場所登録」から作成しよう！</div>';
-    return;
+  if(!locations.length){ el.innerHTML='<div class="empty">まだ保管場所がありません。<br>「＋ 場所登録」から作成しよう！</div>'; return; }
+  const childrenOf=id=>locations.filter(x=>String(x.parentId||"")===String(id));
+  locations.forEach(x=>{ if(childrenOf(x.id).length===0) expandedLocations.add(String(x.id)); });
+  function node(x,level=0){
+    const children=childrenOf(x.id), used=items.filter(i=>String(i.location)===String(x.id)).length, expanded=expandedLocations.has(String(x.id));
+    return `<div class="location-card level-${Math.min(level,2)}"><div class="location-head"><button class="location-toggle ${children.length?"":"empty"}" onclick="toggleLocation(${x.id})">${children.length?(expanded?"⌄":"›"):""}</button><span class="location-icon">${locationIcon(x.name,level)}</span><div class="location-name">${esc(x.name)}</div><span class="small">${used}件</span></div>${level>0?`<div class="location-path">${esc(locationPath(x.id))}</div>`:""}${x.notes?`<div class="small" style="margin:5px 0 0 68px">📝 ${esc(x.notes)}</div>`:""}<div class="location-actions"><button class="btn ghost" onclick="openLocationForm(${x.id})">編集</button><button class="btn ghost" onclick="deleteLocation(${x.id})">削除</button></div>${children.length&&expanded?`<div class="location-children">${children.map(c=>node(c,level+1)).join("")}</div>`:""}</div>`;
   }
-  el.innerHTML=locations.map(x=>{
-    const children=locations.filter(y=>y.parentId===x.id).length;
-    const used=items.filter(i=>String(i.location)===String(x.id)).length;
-    return `<div class="location-card">
-      <div class="location-name">📍 ${esc(x.name)}</div>
-      <div class="location-path">${esc(locationPath(x.id))}　・　${used}件${children?`　・　子${children}件`:""}</div>
-      ${x.notes?`<div class="small">📝 ${esc(x.notes)}</div>`:""}
-      <div class="location-actions">
-        <button class="btn ghost" onclick="openLocationForm(${x.id})">編集</button>
-        <button class="btn ghost" onclick="deleteLocation(${x.id})">削除</button>
-      </div>
-    </div>`;
-  }).join("");
+  const roots=locations.filter(x=>!x.parentId || !locations.some(p=>String(p.id)===String(x.parentId))); roots.forEach(x=>expandedLocations.add(String(x.id))); el.innerHTML=roots.map(x=>node(x,0)).join("");
 }
 function render(){
  let q=$("search").value.toLowerCase();
@@ -184,7 +188,7 @@ function openForm(id=null){
 }
 function closeForm(){$("modal").style.display="none";$("form").reset();photo="";editing=null;$("preview").style.display="none"}
 $("photo").addEventListener("change",e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{photo=r.result;$("preview").src=photo;$("preview").style.display="block"};r.readAsDataURL(f)})
-$("form").addEventListener("submit",e=>{e.preventDefault();let d={name:$("name").value,series:$("series").value,character:$("character").value,category:$("category").value,condition:$("condition").value,status:$("status").value,location:$("location").value,notes:$("notes").value,photo,updated:new Date().toISOString()};
+$("form").addEventListener("submit",e=>{e.preventDefault();let d={itemType:$('"'"'itemType'"'"').value,name:$('"'"'name'"'"').value,series:$('"'"'series'"'"').value,character:$('"'"'character'"'"').value,outfitName:$('"'"'outfitName'"'"').value,category:$('"'"'category'"'"').value,condition:$('"'"'condition'"'"').value,status:$('"'"'status'"'"').value,location:$('"'"'location'"'"').value,shootingStatus:Array.from(document.querySelectorAll('"'"'input[name="shootingStatus"]:checked'"'"')).map(c=>c.value),notes:$('"'"'notes'"'"').value,photo,updated:new Date().toISOString()};
  if(editing){Object.assign(items.find(x=>x.id===editing),d)}else{items.unshift({...d,id:Date.now(),created:new Date().toISOString()})}persist();closeForm()})
 function openLocationForm(id=null){
   editingLocation=id;
@@ -250,4 +254,138 @@ function toggleOut(id){let x=items.find(i=>i.id===id);x.status=x.status==="持�
 function del(id){if(confirm("このアイテムを削除しますか？")){items=items.filter(x=>x.id!==id);persist();closeDetail()}}
 $("search").addEventListener("input",render);render();
 </script>
+
+<!-- CosStock Backup / Restore -->
+<section id="backupSection" class="section" style="margin-top:16px;">
+  <div class="section-title">💾 データバックアップ</div>
+  <div style="font-size:13px;line-height:1.6;opacity:.8;margin-bottom:10px;">
+    SafariのWebサイトデータを消しても復元できるように、登録データをiPhoneの「ファイル」に保存できます。
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <button type="button" id="backupExportBtn" class="primary-btn">💾 バックアップを保存</button>
+    <button type="button" id="backupImportBtn" class="secondary-btn">📥 データを復元</button>
+  </div>
+  <input type="file" id="backupFileInput" accept=".json,application/json" style="display:none;">
+  <div id="backupLastInfo" style="font-size:12px;margin-top:9px;opacity:.7;"></div>
+</section>
+
+
+<script>
+(function(){
+  const ITEM_KEY = "cosstock_v02";
+  const LOCATION_KEY = "cosstock_locations_v03";
+  const BACKUP_INFO_KEY = "cosstock_last_backup";
+
+  function safeParse(key, fallback){
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch(e) {
+      return fallback;
+    }
+  }
+
+  function getData(){
+    return {
+      backupVersion: 1,
+      app: "CosStock",
+      exportedAt: new Date().toISOString(),
+      items: safeParse(ITEM_KEY, []),
+      locations: safeParse(LOCATION_KEY, [])
+    };
+  }
+
+  function updateBackupInfo(){
+    const el = document.getElementById("backupLastInfo");
+    if (!el) return;
+    const raw = localStorage.getItem(BACKUP_INFO_KEY);
+    if (!raw) {
+      el.textContent = "最終バックアップ：まだありません";
+      return;
+    }
+    try {
+      const d = new Date(raw);
+      el.textContent = "最終バックアップ：" + d.toLocaleString("ja-JP");
+    } catch(e) {
+      el.textContent = "最終バックアップ：保存済み";
+    }
+  }
+
+  function downloadBackup(){
+    const data = getData();
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const stamp = new Date();
+    const pad = n => String(n).padStart(2,"0");
+    const filename = "CosStock_backup_" +
+      stamp.getFullYear() + "-" + pad(stamp.getMonth()+1) + "-" + pad(stamp.getDate()) +
+      "_" + pad(stamp.getHours()) + "-" + pad(stamp.getMinutes()) + ".json";
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    localStorage.setItem(BACKUP_INFO_KEY, new Date().toISOString());
+    updateBackupInfo();
+    alert("バックアップファイルを作成しました。\\niPhoneの「ファイル」に保存してください。");
+  }
+
+  function validateBackup(data){
+    if (!data || typeof data !== "object") return false;
+    if (data.app !== "CosStock") return false;
+    if (!Array.isArray(data.items) || !Array.isArray(data.locations)) return false;
+    return true;
+  }
+
+  function restoreFromFile(file){
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(){
+      try {
+        const data = JSON.parse(reader.result);
+        if (!validateBackup(data)) {
+          alert("CosStockのバックアップファイルとして認識できません。");
+          return;
+        }
+        const itemCount = data.items.length;
+        const locationCount = data.locations.length;
+        const ok = confirm(
+          "現在のCosStockデータを置き換えて復元します。\\n\\n" +
+          "アイテム：" + itemCount + "件\\n" +
+          "保管場所：" + locationCount + "件\\n\\n" +
+          "現在のデータは上書きされます。続けますか？"
+        );
+        if (!ok) return;
+
+        localStorage.setItem(ITEM_KEY, JSON.stringify(data.items));
+        localStorage.setItem(LOCATION_KEY, JSON.stringify(data.locations));
+        localStorage.setItem(BACKUP_INFO_KEY, data.exportedAt || new Date().toISOString());
+
+        alert("データを復元しました。");
+        location.reload();
+      } catch(e) {
+        alert("バックアップファイルの読み込みに失敗しました。");
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  document.addEventListener("DOMContentLoaded", function(){
+    const exportBtn = document.getElementById("backupExportBtn");
+    const importBtn = document.getElementById("backupImportBtn");
+    const input = document.getElementById("backupFileInput");
+    if (exportBtn) exportBtn.addEventListener("click", downloadBackup);
+    if (importBtn) importBtn.addEventListener("click", () => input && input.click());
+    if (input) input.addEventListener("change", e => {
+      restoreFromFile(e.target.files && e.target.files[0]);
+      e.target.value = "";
+    });
+    updateBackupInfo();
+  });
+})();
+</script>
+
 </body></html>

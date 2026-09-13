@@ -1,1 +1,10 @@
-{"name": "CosStock", "short_name": "CosStock", "start_url": "./index.html", "display": "standalone", "background_color": "#f7f6fb", "theme_color": "#7357e8", "lang": "ja"}
+{
+  "name": "CosStock",
+  "short_name": "CosStock",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f7f6fb",
+  "theme_color": "#7357e8",
+  "lang": "ja",
+  "version": "0.8.0"
+}
