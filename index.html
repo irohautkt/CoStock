@@ -17,6 +17,12 @@ main{max-width:760px;margin:auto;padding:14px 15px 90px}.search{width:100%;borde
 .modal{display:none;position:fixed;inset:0;background:#0007;align-items:flex-end;z-index:5}.sheet{background:#fff;border-radius:22px 22px 0 0;width:100%;max-height:92vh;overflow:auto;padding:20px}.sheet h2{margin:0 0 12px}
 label{display:block;font-size:12px;font-weight:700;margin:11px 0 5px}input,select,textarea{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:15px;background:#fff}textarea{min-height:70px}.preview{width:100%;max-height:210px;object-fit:cover;border-radius:13px;margin-top:8px;display:none}.actions{display:flex;gap:8px;margin-top:15px}.actions button{flex:1}
 .detail{background:#fff;border-radius:18px;padding:16px;margin-top:12px}.detail img{width:100%;max-height:300px;object-fit:cover;border-radius:14px}.pill{display:inline-block;border-radius:99px;padding:5px 9px;background:#eeeaf8;font-size:12px;margin:4px 4px 0 0}
+.shoot-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:7px 0 14px}
+.shoot-option{display:flex;align-items:center;gap:7px;border:1px solid #e4e1ea;background:#fff;border-radius:12px;padding:10px;font-size:13px}
+.shoot-option input{width:18px;height:18px;accent-color:#7357e8}
+.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:7px 0 14px}
+.type-card{border:2px solid #e7e3f5;background:#fff;border-radius:15px;padding:13px 10px;text-align:left;min-height:105px;display:flex;flex-direction:column;gap:5px}
+.type-card b{font-size:14px}.type-card span{font-size:11px;color:#777;line-height:1.45}.type-card.selected{border-color:#7357e8;background:#f4f0ff}
 .location-card{background:#fff;border-radius:16px;padding:13px;margin:8px 0;box-shadow:0 2px 12px #00000008}
 .location-name{font-weight:700}.location-path{font-size:12px;color:#777;margin-top:3px}.location-actions{display:flex;gap:7px;margin-top:9px}.location-actions button{flex:1}
 </style>
@@ -44,9 +50,16 @@ label{display:block;font-size:12px;font-weight:700;margin:11px 0 5px}input,selec
 <label>名前</label><input id="name" required placeholder="例：Gigi 衣装">
 <label>作品</label><input id="series" placeholder="例：hololive">
 <label>キャラクター</label><input id="character" placeholder="例：Gigi Murin">
-<label>種類</label><select id="category"><option>衣装</option><option>ウィッグ</option><option>靴</option><option>小物</option><option>撮影機材</option><option>販売物</option><option>その他</option></select>
+<label>種類</label><select id="category"><option>衣装</option><option>ウィッグ</option><option>靴</option><option>キャラクター小物</option><option>共通小物</option><option>撮影機材</option><option>販売物</option><option>裁縫・製作用品</option><option>その他</option></select>
 <label>コンディション</label><select id="condition"><option>新品</option><option selected>良好</option><option>使用感あり</option><option>要メンテナンス</option><option>要修理</option><option>使用不可</option></select>
 <label>ステータス</label><select id="status"><option>保管中</option><option>持ち出し中</option><option>クリーニング中</option><option>修理中</option><option>製作中</option><option>貸出中</option></select>
+<label>撮影ステータス <span class="small">（複数選択可）</span></label>
+<div class="shoot-grid">
+  <label class="shoot-option"><input type="checkbox" name="shootingStatus" value="スタジオ・ロケ">📸 スタジオ・ロケ</label>
+  <label class="shoot-option"><input type="checkbox" name="shootingStatus" value="イベント">🎪 イベント</label>
+  <label class="shoot-option"><input type="checkbox" name="shootingStatus" value="宅コス">🏠 宅コス</label>
+  <label class="shoot-option"><input type="checkbox" name="shootingStatus" value="未撮影">🆕 未撮影</label>
+</div>
 <label>保管場所</label>
 <select id="location"><option value="">未登録</option></select>
 <div class="small" style="margin-top:5px">保管場所は下の「📍 保管場所」から先に登録できます。</div>
@@ -126,9 +139,25 @@ function render(){
  $("out").textContent=items.filter(x=>x.status==="持ち出し中").length;
  $("list").innerHTML=a.length?a.map(x=>`<div class="item" onclick="showDetail(${x.id})">
  ${x.photo?`<img class="thumb" src="${x.photo}">`:`<div class="thumb"></div>`}
- <div><div class="name">${esc(x.name)}</div><div class="small">${esc(x.series)}${x.character?" ・ "+esc(x.character):""}</div>
+ <div><div class="name">${esc(x.name)}</div><div class="small">${x.itemType==="common"?"📦 共通アイテム":esc(x.series)+(x.character?" ・ "+esc(x.character):"")+(x.outfitName?" ・ "+esc(x.outfitName):"")}</div>
+ <div class="small">${(x.shootingStatus||[]).map(s=>"🎬 "+esc(s)).join("　")}</div>
  <div class="small ${cls(x.condition)}">● ${esc(x.condition)}　/　${esc(x.status)}</div><div class="small">📍 ${esc(x.location?locationPath(Number(x.location)):"場所未登録")}</div></div></div>`).join(""):`<div class="empty">まだアイテムがありません。<br>＋アイテム登録から最初の1件を登録しよう！</div>`;
  renderLocations();
+}
+function setItemType(type, clearFields=true){
+  $("itemType").value=type;
+  $("typeCosplay").classList.toggle("selected",type==="cosplay");
+  $("typeCommon").classList.toggle("selected",type==="common");
+  $("cosplayFields").style.display=type==="cosplay"?"block":"none";
+  if(type==="common" && clearFields){
+    $("series").value="";
+    $("character").value="";
+    $("outfitName").value="";
+  }
+  const category=$("category");
+  if(type==="common" && ["衣装","ウィッグ","靴","キャラクター小物"].includes(category.value)){
+    category.value="共通小物";
+  }
 }
 function openForm(id=null){
  editing=id;
@@ -136,12 +165,20 @@ function openForm(id=null){
  $("modal").style.display="flex";
  if(id){
    let x=items.find(i=>i.id===id);
-   for(let k of ["name","series","character","category","condition","status","notes"])$(k).value=x[k]||"";
+   for(let k of ["name","series","character","outfitName","category","condition","status","notes"])$(k).value=x[k]||"";
+   document.querySelectorAll('input[name="shootingStatus"]').forEach(c=>c.checked=(x.shootingStatus||[]).includes(c.value));
+   setItemType(x.itemType || ((x.series||x.character) ? "cosplay" : "common"), false);
    populateLocationSelect(x.location||"");
    photo=x.photo||"";
    $("preview").src=photo;
    $("preview").style.display=photo?"block":"none";
- }else{
+  }else{
+   $("itemType").value="cosplay";
+   setItemType("cosplay", false);
+   $("series").value="";
+   $("character").value="";
+   $("outfitName").value="";
+   document.querySelectorAll('input[name="shootingStatus"]').forEach(c=>c.checked=false);
    populateLocationSelect("");
  }
 }
