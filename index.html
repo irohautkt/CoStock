@@ -36,6 +36,32 @@ label{display:block;font-size:12px;font-weight:700;margin:11px 0 5px}input,selec
 .location-card.level-2{margin-left:36px}
 .location-children{margin-left:4px}
 
+
+/* v1.6.7: onboarding popup typography/layout */
+.home-guide, .homeGuide, #homeGuide, .guide-modal, .onboarding-modal {
+  box-sizing: border-box;
+}
+.home-guide *, .homeGuide *, #homeGuide *, .guide-modal *, .onboarding-modal * {
+  box-sizing: border-box;
+}
+.home-guide p, .homeGuide p, #homeGuide p, .guide-modal p, .onboarding-modal p {
+  line-height: 1.7;
+  overflow-wrap: normal;
+  word-break: normal;
+  text-wrap: pretty;
+  margin-left: 0;
+  margin-right: 0;
+}
+.home-guide h2, .homeGuide h2, #homeGuide h2, .guide-modal h2, .onboarding-modal h2 {
+  line-height: 1.45;
+  word-break: keep-all;
+}
+.home-guide button, .homeGuide button, #homeGuide button, .guide-modal button, .onboarding-modal button {
+  white-space: normal;
+  word-break: keep-all;
+  line-height: 1.45;
+}
+
 </style>
 
 <style id="cosstock-kawaii-v13">
@@ -187,6 +213,18 @@ select#locationParent {
 #homeGuideModal .guide-close:active,#homeGuideModal .guide-browser:active{transform:scale(.99);}
 @media (display-mode: standalone){#homeGuideModal{display:none!important;}}
 </style>
+
+<style>
+.guide-copy{
+  display:block;
+  line-height:1.7;
+  word-break:normal;
+  overflow-wrap:normal;
+  white-space:normal;
+  text-wrap:pretty;
+}
+</style>
+
 </head>
 <body>
 <div id="homeGuideModal" role="dialog" aria-modal="true" aria-labelledby="homeGuideTitle">
