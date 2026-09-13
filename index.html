@@ -198,7 +198,7 @@ select#locationParent {
       <div class="guide-step"><div class="guide-num">3</div><div><b>ホーム画面のCoStockから起動</b><span>それからアイテム登録・保管場所登録を始めてください。</span></div></div>
     </div>
     <p class="guide-note">※すでにホーム画面からCoStockを開いている場合、この案内は表示されません。</p>
-    <button class="guide-close" type="button" onclick="closeHomeGuide()">ホーム画面に追加してから使う</button>
+    <button class="guide-close" type="button" onclick="openHomeShare()">ホーム画面に追加してから使う</button>
   </div>
 </div>
 
@@ -722,6 +722,23 @@ $("search").addEventListener("input",render);render();
   
 function isStandalone(){
   return window.matchMedia && window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+async function openHomeShare(){
+  const shareData={
+    title:"CoStock",
+    text:"CoStockをホーム画面に追加して使ってね📱",
+    url:window.location.href
+  };
+  if(navigator.share){
+    try{
+      await navigator.share(shareData);
+      closeHomeGuide();
+    }catch(e){
+      // ユーザーによるキャンセル時は案内を閉じない
+    }
+  }else{
+    alert("このブラウザでは共有メニューを開けません。Safariの下部にある「共有」ボタンから「ホーム画面に追加」を選択してください。");
+  }
 }
 function closeHomeGuide(){
   const m=$("homeGuideModal");
