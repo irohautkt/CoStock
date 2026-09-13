@@ -199,6 +199,8 @@ select#locationParent {
 <div id="commonNameField">
 <label>アイテム名</label><input id="name" placeholder="例：白手袋、黒パニエ、黒タイツ">
 <div class="small" style="margin-top:5px">共通アイテムは名前を付けて管理します。</div>
+<label id="commonQuantityFieldLabel">個数</label><input id="quantity" type="number" min="1" step="1" value="1" inputmode="numeric" placeholder="例：3">
+<div class="small" style="margin-top:5px">同じ共通アイテムを複数持っている場合に入力してください。</div>
 </div>
 <div id="characterFields">
 <label>作品名</label><input id="series" placeholder="例：hololive">
@@ -248,19 +250,23 @@ let locations=JSON.parse(localStorage.getItem(LOC_KEY)||"[]");
 let photo="",photos=[],editing=null,editingLocation=null;
 const $=id=>document.getElementById(id);
 function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
-function persist(){
+async function persist(){
   try{
+    await compactAllPhotos(600,0.58);
     localStorage.setItem(KEY,JSON.stringify(items));
     render();
     return true;
   }catch(err){
-    console.error(err);
-    if(err && (err.name === "QuotaExceededError" || String(err).toLowerCase().includes("quota"))){
-      alert("写真を含むデータ容量が大きすぎて保存できませんでした。\n写真を減らすか、写真をより小さいサイズで登録してください。");
-    }else{
-      alert("保存に失敗しました。もう一度お試しください。");
+    try{
+      await compactAllPhotos(400,0.45);
+      localStorage.setItem(KEY,JSON.stringify(items));
+      render();
+      return true;
+    }catch(err2){
+      console.error(err2);
+      alert("写真を含むデータ容量が大きすぎて保存できませんでした。\n\n写真を減らすか、不要なアイテムの写真を削除してください。");
+      return false;
     }
-    return false;
   }
 }
 function cls(c){return ["新品","良好"].includes(c)?"ok":["使用感あり","要メンテナンス"].includes(c)?"warn":"bad"}
@@ -339,7 +345,7 @@ function render(){
  $("out").textContent=items.filter(x=>x.status==="持ち出し中").length;
  const listHtml=visibleItems.length?visibleItems.map(x=>`<div class="item" onclick="showDetail(${x.id})">
  ${x.photo?`<img class="thumb" src="${x.photo}">`:`<div class="thumb"></div>`}
- <div><div class="name">${esc(itemDisplayName(x))}</div><div class="small">${x.itemType==="common"?" 共通アイテム":" キャラクターアイテム"}</div>
+ <div><div class="name">${esc(itemDisplayName(x))}</div><div class="small">${x.itemType==="common"?` 共通アイテム　/　個数 ${Math.max(1,Number(x.quantity)||1)}個`:" キャラクターアイテム"}</div>
  ${x.itemType==="common"?"":`<div class="small">${(x.shootingStatus||[]).map(s=>esc(s)).join("　")}</div>`}
  <div class="small ${cls(x.condition)}">● ${esc(x.condition)}　/　${esc(x.status)}</div><div class="small"> ${esc(x.location?locationPath(Number(x.location)):"場所未登録")}</div></div></div>`).join(""):`<div class="empty">${isSearching?"検索に一致するアイテムがありません。":"まだアイテムがありません。<br>＋アイテム登録から最初の1件を登録しよう！"}</div>`;
  const toggleHtml=!isSearching && items.length>5 ? `<button type="button" class="item-list-toggle" onclick="toggleAllItems()">${showAllItems?"− 5件表示に戻す":"＋ 全て表示"}</button>` : "";
@@ -357,6 +363,8 @@ function setItemType(type, clearFields=true){
   $("typeCommon").classList.toggle("selected",type==="common");
   $("characterFields").style.display=type==="character"?"block":"none";
   $("commonNameField").style.display=type==="common"?"block":"none";
+  $("commonQuantityFieldLabel").style.display=type==="common"?"block":"none";
+  $("quantity").style.display=type==="common"?"block":"none";
   $("shootingStatusField").style.display=type==="character"?"block":"none";
   $("name").required=type==="common";
   const category=$("category");
@@ -380,6 +388,7 @@ function openForm(id=null){
   if(id){
     let x=items.find(i=>i.id===id);
     for(let k of ["name","series","character","outfitName","condition","status","notes"]) $(k).value=x[k]||"";
+    $("quantity").value=(x.itemType==="common" ? Math.max(1, Number(x.quantity)||1) : 1);
     document.querySelectorAll('input[name="shootingStatus"]').forEach(c=>c.checked=(x.shootingStatus||[]).includes(c.value));
     setItemType(x.itemType || ((x.series||x.character) ? "character" : "common"), false);
     populateLocationSelect(x.location||"");
@@ -390,6 +399,7 @@ function openForm(id=null){
     $("form").reset();
     setItemType("character", false);
     $("name").value="";
+    $("quantity").value=1;
     $("series").value=""; $("character").value=""; $("outfitName").value="";
     document.querySelectorAll('input[name="shootingStatus"]').forEach(c=>c.checked=false);
     populateLocationSelect("");
@@ -408,36 +418,47 @@ function removePhoto(index){
   photo=photos[0]||"";
   renderPhotoPreviews();
 }
+function compressDataUrl(src,max=600,quality=0.58){
+  return new Promise((resolve,reject)=>{
+    if(!src || typeof src!=="string" || !src.startsWith("data:image")){resolve(src||"");return;}
+    const img=new Image();
+    img.onload=()=>{
+      const scale=Math.min(1,max/Math.max(img.width,img.height));
+      const w=Math.max(1,Math.round(img.width*scale));
+      const h=Math.max(1,Math.round(img.height*scale));
+      const canvas=document.createElement("canvas");
+      canvas.width=w; canvas.height=h;
+      const ctx=canvas.getContext("2d",{alpha:false});
+      ctx.drawImage(img,0,0,w,h);
+      resolve(canvas.toDataURL("image/jpeg",quality));
+    };
+    img.onerror=reject; img.src=src;
+  });
+}
 function resizePhoto(file){
   return new Promise((resolve,reject)=>{
     const reader=new FileReader();
-    reader.onload=()=>{
-      const img=new Image();
-      img.onload=()=>{
-        // localStorageの容量を圧迫しないよう、登録時に画像を十分小さくする
-        const max=720;
-        const scale=Math.min(1,max/Math.max(img.width,img.height));
-        const w=Math.max(1,Math.round(img.width*scale));
-        const h=Math.max(1,Math.round(img.height*scale));
-        const canvas=document.createElement("canvas");
-        canvas.width=w; canvas.height=h;
-        const ctx=canvas.getContext("2d",{alpha:false});
-        ctx.drawImage(img,0,0,w,h);
-        // 1枚あたりおおむね200KB以下を目安に品質を下げる
-        let quality=0.72;
-        let data=canvas.toDataURL("image/jpeg",quality);
-        while(data.length>270000 && quality>0.42){
-          quality-=0.06;
-          data=canvas.toDataURL("image/jpeg",quality);
-        }
-        resolve(data);
-      };
-      img.onerror=()=>reject(new Error("画像の読み込みに失敗しました"));
-      img.src=reader.result;
-    };
-    reader.onerror=()=>reject(new Error("ファイルの読み込みに失敗しました"));
+    reader.onload=()=>compressDataUrl(reader.result,600,0.58).then(resolve).catch(reject);
+    reader.onerror=reject;
     reader.readAsDataURL(file);
   });
+}
+async function compactAllPhotos(max=600,quality=0.58){
+  for(const item of items){
+    const list=Array.isArray(item.photos)?item.photos.slice(0,4):(item.photo?[item.photo]:[]);
+    if(!list.length){ item.photos=[]; item.photo=""; continue; }
+    const compacted=[];
+    for(const src of list) compacted.push(await compressDataUrl(src,max,quality));
+    item.photos=compacted.slice(0,4);
+    item.photo=item.photos[0]||"";
+  }
+  // Current form photos are also compacted before saving.
+  if(photos.length){
+    const compacted=[];
+    for(const src of photos.slice(0,4)) compacted.push(await compressDataUrl(src,max,quality));
+    photos=compacted;
+    photo=photos[0]||"";
+  }
 }
 $("photoLibrary").addEventListener("change",async e=>{
   const files=Array.from(e.target.files||[]);
@@ -449,7 +470,7 @@ $("photoLibrary").addEventListener("change",async e=>{
   }catch(err){alert("写真の読み込みに失敗しました。");}
   e.target.value="";
 });
-$("form").addEventListener("submit",e=>{
+$("form").addEventListener("submit",async e=>{
  e.preventDefault();
  const type=$('itemType').value;
  const commonName=$('name').value.trim();
@@ -461,6 +482,7 @@ $("form").addEventListener("submit",e=>{
  let d={
    itemType:type,
    name:type==="common"?commonName:"",
+   quantity:type==="common"?Math.max(1,parseInt($("quantity").value,10)||1):1,
    series:type==="character"?$('series').value.trim():"",
    character:type==="character"?$('character').value.trim():"",
    outfitName:type==="character"?$('outfitName').value.trim():"",
@@ -474,14 +496,9 @@ $("form").addEventListener("submit",e=>{
    photos:photos.slice(0,4),
    updated:new Date().toISOString()
  };
- if(editing){
-   const target=items.find(x=>String(x.id)===String(editing));
-   if(!target){alert("編集対象のアイテムが見つかりませんでした。");return;}
-   Object.assign(target,d);
- }else{
-   items.unshift({...d,id:Date.now(),created:new Date().toISOString()});
- }
- if(persist()) closeForm();
+ if(editing){Object.assign(items.find(x=>x.id===editing),d)}else{items.unshift({...d,id:Date.now(),created:new Date().toISOString()})}
+ const saved=await persist();
+ if(saved) closeForm();
 })
 function openLocationForm(id=null){
   editingLocation=id;
@@ -545,7 +562,7 @@ function showDetail(id){
   let x=items.find(i=>i.id===id);
   const isCommon=x.itemType==="common";
   const detailPhotos=Array.isArray(x.photos)?x.photos.slice(0,4):(x.photo?[x.photo]:[]);
-  $("detail").innerHTML=`${detailPhotos.length?`<div class="photo-preview-grid detail-photo-grid">${detailPhotos.map(src=>`<div class="photo-slot"><img src="${src}"></div>`).join("")}</div>`:""}<h2>${esc(itemDisplayName(x))}</h2><div class="pill">${esc(x.category)}</div><div class="pill">${esc(x.condition)}</div><div class="pill">${esc(x.status)}</div><div class="detail"><b> 保管場所</b><p>${esc(x.location?locationPath(Number(x.location)):"未登録")}</p>${!isCommon?`<b>作品名</b><p>${esc(x.series||"未登録")}</p><b>キャラ名</b><p>${esc(x.character||"未登録")}</p><b>衣装名</b><p>${esc(x.outfitName||"未登録")}</p>`:""}${x.notes?`<b>📝 メモ</b><p>${esc(x.notes)}</p>`:""}<div class="actions"><button class="btn" onclick="openForm(${id});closeDetail()">編集</button><button class="btn ghost" onclick="toggleOut(${id})">${x.status==="持ち出し中"?"↩ 返却する":"🧳 持ち出す"}</button><button class="btn ghost" onclick="del(${id})">削除</button></div></div>`;
+  $("detail").innerHTML=`${detailPhotos.length?`<div class="photo-preview-grid detail-photo-grid">${detailPhotos.map(src=>`<div class="photo-slot"><img src="${src}"></div>`).join("")}</div>`:""}<h2>${esc(itemDisplayName(x))}</h2><div class="pill">${esc(x.category)}</div><div class="pill">${esc(x.condition)}</div><div class="pill">${esc(x.status)}</div><div class="detail"><b> 保管場所</b><p>${esc(x.location?locationPath(Number(x.location)):"未登録")}</p>${isCommon?`<b>個数</b><p>${Math.max(1,Number(x.quantity)||1)}個</p>`:""}${!isCommon?`<b>作品名</b><p>${esc(x.series||"未登録")}</p><b>キャラ名</b><p>${esc(x.character||"未登録")}</p><b>衣装名</b><p>${esc(x.outfitName||"未登録")}</p>`:""}${x.notes?`<b>📝 メモ</b><p>${esc(x.notes)}</p>`:""}<div class="actions"><button class="btn" onclick="openForm(${id});closeDetail()">編集</button><button class="btn ghost" onclick="toggleOut(${id})">${x.status==="持ち出し中"?"↩ 返却する":"🧳 持ち出す"}</button><button class="btn ghost" onclick="del(${id})">削除</button></div></div>`;
   $("detailModal").style.display="flex"
 }
 function closeDetail(){$("detailModal").style.display="none"}
