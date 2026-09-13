@@ -208,6 +208,51 @@ select#locationParent {
 }
 </style>
 
+
+<style id="costock-share-guide">
+.share-guide-overlay{
+  position:fixed; inset:0; z-index:100000;
+  display:flex; align-items:center; justify-content:center;
+  padding:20px; background:rgba(40,30,50,.38);
+}
+.share-guide-card{
+  width:min(92vw,360px);
+  max-height:calc(100vh - 40px);
+  overflow:auto;
+  background:#fff; border-radius:24px;
+  padding:24px 20px 18px;
+  box-shadow:0 16px 50px rgba(0,0,0,.18);
+  text-align:center;
+  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+}
+.share-guide-title{
+  font-size:20px; font-weight:700; line-height:1.5;
+  margin-bottom:12px; word-break:normal;
+}
+.share-guide-text{
+  font-size:15px; line-height:1.7; margin-bottom:12px;
+}
+.share-guide-visual{
+  margin:4px auto 14px;
+  padding:10px 0 8px;
+  border-radius:16px;
+  background:rgba(245,240,250,.8);
+}
+.share-guide-arrow{font-size:28px; line-height:1;}
+.share-guide-share{font-size:34px; line-height:1.2;}
+.share-guide-caption{font-size:12px; margin-top:3px;}
+.share-guide-steps{
+  text-align:left; width:max-content; max-width:100%;
+  margin:0 auto 16px; font-size:14px; line-height:1.9;
+  word-break:normal;
+}
+.share-guide-close{
+  width:100%; border:0; border-radius:14px;
+  padding:12px; font-size:15px; font-weight:600;
+  background:transparent;
+}
+</style>
+
 </head>
 <body>
 <div id="homeGuideModal" role="dialog" aria-modal="true" aria-labelledby="homeGuideTitle">
@@ -760,22 +805,10 @@ function useInBrowser(){
   closeHomeGuide(true);
 }
 function openHomeShare(){
-  // Safari does not provide a reliable web API to open Safari's own Share sheet.
-  // Try Web Share when available; otherwise show the exact manual path.
-  if(typeof navigator !== "undefined" && typeof navigator.share === "function"){
-    navigator.share({
-      title:"CoStock",
-      text:"CoStockをホーム画面に追加",
-      url:window.location.href
-    }).then(function(){
-      closeHomeGuide(true);
-    }).catch(function(err){
-      if(!err || err.name !== "AbortError"){
-        alert("Safari下部の「共有」→「ホーム画面に追加」から追加してください📱");
-      }
-    });
-  }else{
-    alert("Safari下部の「共有」→「ホーム画面に追加」から追加してください📱");
+  var guide=document.getElementById("shareGuideModal");
+  if(guide){
+    guide.style.display="flex";
+    guide.setAttribute("aria-hidden","false");
   }
 }
 window.openHomeShare = openHomeShare;
@@ -852,5 +885,50 @@ document.addEventListener("DOMContentLoaded", function(){
 
   製作者 <a href="https://x.com/irohautkt_cos" target="_blank" rel="noopener noreferrer">@irohautkt_cos</a>
 </footer>
+
+
+<div id="shareGuideModal" class="share-guide-overlay" style="display:none;" aria-hidden="true">
+  <div class="share-guide-card" role="dialog" aria-modal="true" aria-labelledby="shareGuideTitle">
+    <div class="share-guide-title" id="shareGuideTitle">📱 ホーム画面に追加する方法</div>
+    <div class="share-guide-text">
+      Safariの画面下部にある<br><strong>「共有」ボタン</strong>をタップしてください。
+    </div>
+    <div class="share-guide-visual">
+      <div class="share-guide-arrow">↓</div>
+      <div class="share-guide-share">□↑</div>
+      <div class="share-guide-caption">この「共有」ボタン</div>
+    </div>
+    <div class="share-guide-steps">
+      <div>① 「共有」をタップ</div>
+      <div>② 「ホーム画面に追加」をタップ</div>
+      <div>③ 右上の「追加」をタップ</div>
+    </div>
+    <button type="button" id="shareGuideClose" class="share-guide-close">閉じる</button>
+  </div>
+</div>
+
+
+<script id="costock-share-guide-js">
+(function(){
+  function bindShareGuide(){
+    var close=document.getElementById("shareGuideClose");
+    var guide=document.getElementById("shareGuideModal");
+    if(close){
+      close.addEventListener("click",function(e){
+        e.preventDefault(); e.stopPropagation();
+        if(guide){
+          guide.style.display="none";
+          guide.setAttribute("aria-hidden","true");
+        }
+      },false);
+    }
+  }
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",bindShareGuide);
+  }else{
+    bindShareGuide();
+  }
+})();
+</script>
 
 </body></html>
