@@ -36,9 +36,6 @@ label{display:block;font-size:12px;font-weight:700;margin:11px 0 5px}input,selec
 .location-card.level-2{margin-left:36px}
 .location-children{margin-left:4px}
 
-.photo-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 4px}
-.photo-btn{border:0;border-radius:14px;padding:12px 8px;background:#f0ebff;color:#5d49a8;font-weight:700;font-size:14px}
-.photo-btn:active{transform:scale(.98)}
 </style>
 
 <style id="cosstock-kawaii-v13">
@@ -317,10 +314,6 @@ function handlePhotoFile(f){
   };
   r.readAsDataURL(f);
 }
-$("photoCamera").addEventListener("change",e=>{
-  handlePhotoFile(e.target.files && e.target.files[0]);
-  e.target.value="";
-});
 $("photoLibrary").addEventListener("change",e=>{
   handlePhotoFile(e.target.files && e.target.files[0]);
   e.target.value="";
