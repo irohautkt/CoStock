@@ -833,4 +833,65 @@ document.addEventListener("DOMContentLoaded", function(){
   製作者 <a href="https://x.com/irohautkt_cos" target="_blank" rel="noopener noreferrer">@irohautkt_cos</a>
 </footer>
 
+
+<script id="costock-guide-final">
+(function(){
+  function closeGuide(){
+    var m=document.getElementById("homeGuideModal") || document.getElementById("homeGuide");
+    if(m){
+      m.style.display="none";
+      m.setAttribute("aria-hidden","true");
+    }
+    try{localStorage.setItem("costock_home_guide_seen","1");}catch(e){}
+  }
+
+  function openShare(){
+    // A web page cannot reliably invoke Safari's own Share sheet.
+    // If Web Share is available, use it; otherwise give an immediate, visible
+    // instruction rather than leaving the button apparently dead.
+    if(navigator.share){
+      navigator.share({
+        title:"CoStock",
+        text:"CoStockをホーム画面に追加",
+        url:location.href
+      }).then(function(){
+        closeGuide();
+      }).catch(function(err){
+        if(!err || err.name!=="AbortError"){
+          alert("Safari下部の「共有」→「ホーム画面に追加」から追加してください📱");
+        }
+      });
+    }else{
+      alert("Safari下部の「共有」→「ホーム画面に追加」から追加してください📱");
+    }
+  }
+
+  function bind(){
+    var add=document.getElementById("homeGuideAdd");
+    var browser=document.getElementById("homeGuideBrowser");
+
+    if(add){
+      add.addEventListener("click",function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        openShare();
+      },false);
+    }
+    if(browser){
+      browser.addEventListener("click",function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        closeGuide();
+      },false);
+    }
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",bind);
+  }else{
+    bind();
+  }
+})();
+</script>
+
 </body></html>
