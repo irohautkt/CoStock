@@ -183,7 +183,8 @@ select#locationParent {
 #homeGuideModal .guide-step span{font-size:12px;line-height:1.5;color:#7b7180;}
 #homeGuideModal .guide-note{text-align:center;font-size:12px;line-height:1.6;color:#9a909e;margin:0 0 15px;}
 #homeGuideModal .guide-close{width:100%;border:0;border-radius:18px;padding:14px 12px;background:#8f76a5;color:#fff;font-size:16px;font-weight:700;}
-#homeGuideModal .guide-close:active{transform:scale(.99);}
+#homeGuideModal .guide-browser{width:100%;border:1px solid #ddd0e2;border-radius:18px;padding:12px;background:#fff;color:#6f6178;font-size:14px;font-weight:700;margin-top:9px;}
+#homeGuideModal .guide-close:active,#homeGuideModal .guide-browser:active{transform:scale(.99);}
 @media (display-mode: standalone){#homeGuideModal{display:none!important;}}
 </style>
 </head>
@@ -198,7 +199,8 @@ select#locationParent {
       <div class="guide-step"><div class="guide-num">3</div><div><b>ホーム画面のCoStockから起動</b><span>それからアイテム登録・保管場所登録を始めてください。</span></div></div>
     </div>
     <p class="guide-note">※すでにホーム画面からCoStockを開いている場合、この案内は表示されません。</p>
-    <button class="guide-close" type="button" onclick="openHomeShare()">ホーム画面に追加してから使う</button>
+    <button class="guide-close" type="button" onclick="openHomeShare()">📱 ホーム画面に追加してから使う</button>
+    <button class="guide-browser" type="button" onclick="useInBrowser()">ホームに追加せずブラウザで使う</button>
   </div>
 </div>
 
@@ -724,26 +726,30 @@ function isStandalone(){
   return window.matchMedia && window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 }
 async function openHomeShare(){
-  const shareData={
-    title:"CoStock",
-    text:"CoStockをホーム画面に追加して使ってね📱",
-    url:window.location.href
-  };
-  if(navigator.share){
+  // iPhoneのSafariではWeb Share APIから共有シートを開く
+  if(typeof navigator.share === "function"){
     try{
-      await navigator.share(shareData);
+      await navigator.share({url:window.location.href});
       closeHomeGuide();
+      return;
     }catch(e){
-      // ユーザーによるキャンセル時は案内を閉じない
+      // キャンセル時は案内を閉じず、そのままにする
+      if(e && e.name === "AbortError") return;
     }
-  }else{
-    alert("このブラウザでは共有メニューを開けません。Safariの下部にある「共有」ボタンから「ホーム画面に追加」を選択してください。");
   }
+  alert("共有メニューを自動で開けない環境です。Safariの「共有」→「ホーム画面に追加」から追加してください。");
 }
-function closeHomeGuide(){
+function useInBrowser(){
+  // ホーム画面追加を選ばず、このブラウザで使うことを明示的に選択
+  try{localStorage.setItem("costock_home_guide_seen","1");}catch(e){}
+  closeHomeGuide(false);
+}
+function closeHomeGuide(save=true){
   const m=$("homeGuideModal");
   if(m) m.style.display="none";
-  try{localStorage.setItem("costock_home_guide_seen","1");}catch(e){}
+  if(save){
+    try{localStorage.setItem("costock_home_guide_seen","1");}catch(e){}
+  }
 }
 function showHomeGuideIfNeeded(){
   if(isStandalone()) return;
