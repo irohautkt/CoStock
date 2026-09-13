@@ -14,7 +14,7 @@ main{max-width:760px;margin:auto;padding:14px 15px 90px}.search{width:100%;borde
 .row{display:flex;justify-content:space-between;align-items:center}.row h2{font-size:18px;letter-spacing:.2px}.btn{border:0;border-radius:14px;padding:11px 14px;font-weight:700;background:linear-gradient(135deg,#7357e8,#9070ef);color:#fff;box-shadow:0 5px 14px #7357e822}.ghost{background:#f0ecfb;color:#604ba0;box-shadow:none}
 .item{background:#fff;border-radius:16px;padding:12px;margin:9px 0;display:flex;gap:12px;box-shadow:0 2px 12px #00000008}.thumb{width:72px;height:72px;border-radius:12px;object-fit:cover;background:#eceaf0}.name{font-weight:700}.small{font-size:12px;color:#777;margin-top:3px}.ok{color:#168c48}.warn{color:#bd7500}.bad{color:#c93636}.empty{text-align:center;padding:35px;color:#888}
 .fab{position:fixed;right:18px;bottom:18px;border:0;border-radius:99px;background:#7357e8;color:#fff;padding:15px 20px;font-weight:800;box-shadow:0 8px 25px #7357e855}
-.modal{display:none;position:fixed;inset:0;background:#0007;align-items:flex-end;z-index:5}.sheet{background:#fff;border-radius:22px 22px 0 0;width:100%;max-height:92vh;overflow:auto;padding:20px}.sheet h2{margin:0 0 12px}
+.modal{display:none;position:fixed;inset:0;background:#0007;align-items:center;justify-content:center;z-index:5;padding:10px}.sheet{background:#fff;border-radius:22px;width:100%;max-width:760px;max-height:calc(100dvh - 20px);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:20px 20px calc(20px + env(safe-area-inset-bottom))}.sheet h2{margin:0 0 12px}
 label{display:block;font-size:12px;font-weight:700;margin:11px 0 5px}input,select,textarea{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:15px;background:#fff}textarea{min-height:70px}.preview{width:100%;max-height:210px;object-fit:cover;border-radius:13px;margin-top:8px;display:none}.actions{display:flex;gap:8px;margin-top:15px}.actions button{flex:1}
 .detail{background:#fff;border-radius:18px;padding:16px;margin-top:12px}.detail img{width:100%;max-height:300px;object-fit:cover;border-radius:14px}.pill{display:inline-block;border-radius:99px;padding:5px 9px;background:#eeeaf8;font-size:12px;margin:4px 4px 0 0}
 .shoot-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:7px 0 14px}
@@ -109,40 +109,12 @@ button{letter-spacing:.01em;}
 .card,.modal-card{border:1px solid rgba(185,141,169,.14);box-shadow:0 8px 28px rgba(86,63,87,.06);}
 .btn-primary{box-shadow:0 6px 16px rgba(185,141,169,.18);}
 </style>
-<script>
-const CS_ICON={
- plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
- search:'<svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 4 4"/></svg>',
- box:'<svg viewBox="0 0 24 24"><path d="m4 8 8-4 8 4-8 4-8-4Z"/><path d="M4 8v9l8 4 8-4V8M12 12v9"/></svg>',
- camera:'<svg viewBox="0 0 24 24"><path d="M5 7h3l1.5-2h5L16 7h3v11H5V7Z"/><circle cx="12" cy="12.5" r="3.2"/></svg>',
- image:'<svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="9" r="1.2"/><path d="m5.5 17 4.2-4.2 3 2.8 2-2 3.8 3.4"/></svg>',
- pin:'<svg viewBox="0 0 24 24"><path d="M12 21s6-6.2 6-11a6 6 0 1 0-12 0c0 4.8 6 11 6 11Z"/><circle cx="12" cy="10" r="2"/></svg>',
- trash:'<svg viewBox="0 0 24 24"><path d="M5 7h14M9 7V4h6v3M8 10v7M12 10v7M16 10v7M7 7l1 14h8l1-14"/></svg>',
- edit:'<svg viewBox="0 0 24 24"><path d="m5 16-.7 4 4-.8L19 8.5 15.5 5 5 16Z"/><path d="m14.5 6 3.5 3.5"/></svg>',
- folder:'<svg viewBox="0 0 24 24"><path d="M3.5 7.5h6l1.7 2H20.5v9.5h-17V7.5Z"/></svg>'
-};
-function csIcon(name){return '<span class="icon" aria-hidden="true">'+(CS_ICON[name]||CS_ICON.box)+'</span>'}
-function csDecorate(){
- document.querySelectorAll('button').forEach(b=>{
-   const t=b.textContent.trim();
-   if(!b.dataset.csIcon){
-    if(/^\+|登録/.test(t)) b.insertAdjacentHTML('afterbegin',csIcon('plus'));
-    else if(/検索/.test(t)) b.insertAdjacentHTML('afterbegin',csIcon('search'));
-    else if(/カメラ/.test(t)) b.insertAdjacentHTML('afterbegin',csIcon('camera'));
-    else if(/写真から|写真/.test(t)) b.insertAdjacentHTML('afterbegin',csIcon('image'));
-    else if(/編集|変更/.test(t)) b.insertAdjacentHTML('afterbegin',csIcon('edit'));
-    else if(/削除/.test(t)) b.insertAdjacentHTML('afterbegin',csIcon('trash'));
-    b.dataset.csIcon='1';
-   }
- });
-}
-document.addEventListener('DOMContentLoaded',()=>{csDecorate();new MutationObserver(csDecorate).observe(document.body,{childList:true,subtree:true});});
-</script>
+
 </head>
 <body>
 <header><h1><span style="letter-spacing:.02em">CosStock</span><span style="font-size:.7em;margin-left:5px"></span></h1><div class="tag">コスプレ衣装・荷物管理</div></header>
 <main>
-<input id="search" class="search" placeholder=" 衣装・キャラ・場所を検索">
+<input id="search" class="search" placeholder="🔍 衣装・キャラ・場所を検索">
 <div class="grid">
 <div class="stat"><b id="count">0</b><span>アイテム</span></div>
 <div class="stat"><b id="warn">0</b><span>要メンテ</span></div>
@@ -160,8 +132,8 @@ document.addEventListener('DOMContentLoaded',()=>{csDecorate();new MutationObser
 <input type="hidden" id="itemType" value="character">
 <div class="type-title">登録するアイテムを選択</div>
 <div id="typeSelector" class="type-grid">
-<button type="button" id="typeCharacter" class="type-card selected" onclick="setItemType('character')"><b> キャラクターアイテム</b><span>作品・キャラ・衣装を登録</span></button>
-<button type="button" id="typeCommon" class="type-card" onclick="setItemType('common')"><b> 共通アイテム</b><span>キャラに紐づかない共通物</span></button>
+<button type="button" id="typeCharacter" class="type-card selected" onclick="setItemType('character')"><b>🎀 キャラクターアイテム</b><span>作品・キャラ・衣装を登録</span></button>
+<button type="button" id="typeCommon" class="type-card" onclick="setItemType('common')"><b>📦 共通アイテム</b><span>キャラに紐づかない共通物</span></button>
 </div>
 <form id="form">
 <div id="commonNameField">
@@ -176,19 +148,20 @@ document.addEventListener('DOMContentLoaded',()=>{csDecorate();new MutationObser
 <label>種類</label><select id="category"></select>
 <label>コンディション</label><select id="condition"><option>新品</option><option selected>良好</option><option>使用感あり</option><option>要メンテナンス</option><option>要修理</option><option>使用不可</option></select>
 <label>ステータス</label><select id="status"><option>保管中</option><option>持ち出し中</option><option>クリーニング中</option><option>修理中</option><option>製作中</option><option>貸出中</option></select>
+<div id="shootingStatusField">
 <label>撮影ステータス <span class="small">（複数選択可）</span></label>
 <div class="shoot-grid">
 <label class="shoot-option"><input type="checkbox" name="shootingStatus" value="スタジオ・ロケ">スタジオ・ロケ</label>
 <label class="shoot-option"><input type="checkbox" name="shootingStatus" value="イベント">イベント</label>
 <label class="shoot-option"><input type="checkbox" name="shootingStatus" value="宅コス">宅コス</label>
-<label class="shoot-option"><input type="checkbox" name="shootingStatus" value="未撮影">🆕 未撮影</label>
-</div>
+<label class="shoot-option"><input type="checkbox" name="shootingStatus" value="未撮影">未撮影</label>
+</div></div>
 <label>保管場所</label><select id="location"><option value="">未登録</option></select>
 <div class="small" style="margin-top:5px">保管場所は「 保管場所」から登録できます。</div>
 <label>写真</label>
 <div class="photo-actions">
-  <button type="button" class="photo-btn" onclick="document.getElementById('photoCamera').click()"> カメラで撮影</button>
-  <button type="button" class="photo-btn" onclick="document.getElementById('photoLibrary').click()"> 写真から選択</button>
+  <button type="button" class="photo-btn" onclick="document.getElementById('photoCamera').click()">📷 カメラで撮影</button>
+  <button type="button" class="photo-btn" onclick="document.getElementById('photoLibrary').click()">🖼️ 写真から選択</button>
 </div>
 <input id="photoCamera" type="file" accept="image/*" capture="environment" style="display:none">
 <input id="photoLibrary" type="file" accept="image/*" style="display:none">
@@ -286,7 +259,7 @@ function render(){
  $("list").innerHTML=a.length?a.map(x=>`<div class="item" onclick="showDetail(${x.id})">
  ${x.photo?`<img class="thumb" src="${x.photo}">`:`<div class="thumb"></div>`}
  <div><div class="name">${esc(itemDisplayName(x))}</div><div class="small">${x.itemType==="common"?" 共通アイテム":" キャラクターアイテム"}</div>
- <div class="small">${(x.shootingStatus||[]).map(s=>esc(s)).join("　")}</div>
+ ${x.itemType==="common"?"":`<div class="small">${(x.shootingStatus||[]).map(s=>esc(s)).join("　")}</div>`}
  <div class="small ${cls(x.condition)}">● ${esc(x.condition)}　/　${esc(x.status)}</div><div class="small"> ${esc(x.location?locationPath(Number(x.location)):"場所未登録")}</div></div></div>`).join(""):`<div class="empty">まだアイテムがありません。<br>＋アイテム登録から最初の1件を登録しよう！</div>`;
  renderLocations();
 }
@@ -297,6 +270,7 @@ function setItemType(type, clearFields=true){
   $("typeCommon").classList.toggle("selected",type==="common");
   $("characterFields").style.display=type==="character"?"block":"none";
   $("commonNameField").style.display=type==="common"?"block":"none";
+  $("shootingStatusField").style.display=type==="character"?"block":"none";
   $("name").required=type==="common";
   const category=$("category");
   const current=category.value;
@@ -372,7 +346,7 @@ $("form").addEventListener("submit",e=>{
    condition:$('condition').value,
    status:$('status').value,
    location:$('location').value,
-   shootingStatus:Array.from(document.querySelectorAll('input[name="shootingStatus"]:checked')).map(c=>c.value),
+   shootingStatus:type==="character"?Array.from(document.querySelectorAll('input[name="shootingStatus"]:checked')).map(c=>c.value):[],
    notes:$('notes').value,
    photo,
    updated:new Date().toISOString()
