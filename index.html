@@ -188,7 +188,7 @@ function openForm(id=null){
 }
 function closeForm(){$("modal").style.display="none";$("form").reset();photo="";editing=null;$("preview").style.display="none"}
 $("photo").addEventListener("change",e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{photo=r.result;$("preview").src=photo;$("preview").style.display="block"};r.readAsDataURL(f)})
-$("form").addEventListener("submit",e=>{e.preventDefault();let d={itemType:$('"'"'itemType'"'"').value,name:$('"'"'name'"'"').value,series:$('"'"'series'"'"').value,character:$('"'"'character'"'"').value,outfitName:$('"'"'outfitName'"'"').value,category:$('"'"'category'"'"').value,condition:$('"'"'condition'"'"').value,status:$('"'"'status'"'"').value,location:$('"'"'location'"'"').value,shootingStatus:Array.from(document.querySelectorAll('"'"'input[name="shootingStatus"]:checked'"'"')).map(c=>c.value),notes:$('"'"'notes'"'"').value,photo,updated:new Date().toISOString()};
+$("form").addEventListener("submit",e=>{e.preventDefault();let d={itemType:$('itemType').value,name:$('name').value,series:$('series').value,character:$('character').value,outfitName:$('outfitName').value,category:$('category').value,condition:$('condition').value,status:$('status').value,location:$('location').value,shootingStatus:Array.from(document.querySelectorAll('input[name="shootingStatus"]:checked')).map(c=>c.value),notes:$('notes').value,photo,updated:new Date().toISOString()};
  if(editing){Object.assign(items.find(x=>x.id===editing),d)}else{items.unshift({...d,id:Date.now(),created:new Date().toISOString()})}persist();closeForm()})
 function openLocationForm(id=null){
   editingLocation=id;
