@@ -110,6 +110,35 @@ button{letter-spacing:.01em;}
 
 <style></style>
 
+
+<style>
+select{
+  appearance:auto;
+  -webkit-appearance:auto;
+  background-image:none !important;
+  padding-right:32px !important;
+}
+.location-select-wrap{
+  position:relative;
+}
+.location-select-wrap::after{
+  content:"▼";
+  position:absolute;
+  right:12px;
+  top:50%;
+  transform:translateY(-50%);
+  pointer-events:none;
+  font-size:11px;
+  color:#7f7585;
+}
+.creator-footer{
+  text-align:center !important;
+}
+.app-version{
+  text-align:center !important;
+}
+</style>
+
 </head>
 <body>
 <header><h1><span style="letter-spacing:.02em">CosStock</span><span style="font-size:.7em;margin-left:5px"></span></h1><div class="tag">コスプレ衣装・荷物管理</div></header>
@@ -120,10 +149,10 @@ button{letter-spacing:.01em;}
 <div class="stat"><b id="warn">0</b><span>要メンテ</span></div>
 <div class="stat"><b id="out">0</b><span>持ち出し中</span></div>
 </div>
-<div class="row"><h2> アイテム</h2><button class="btn ghost" onclick="openForm()">＋ 登録</button></div>
+<div class="row"><h2> 📦 アイテム</h2><button class="btn ghost" onclick="openForm()">＋ 登録</button></div>
 <div id="list"></div>
 
-<div class="row" style="margin-top:24px"><h2> 保管場所</h2><button class="btn ghost" onclick="openLocationForm()">＋ 場所登録</button></div>
+<div class="row" style="margin-top:24px"><h2> 🗂️ 保管場所</h2><button class="btn ghost" onclick="openLocationForm()">＋ 場所登録</button></div>
 <div id="locationList"></div>
 </main>
 
@@ -172,7 +201,7 @@ button{letter-spacing:.01em;}
 <h2 id="locationFormTitle">保管場所を登録</h2>
 <form id="locationForm">
 <label>場所名</label><input id="locationName" required placeholder="例：衣装部屋・棚A・BOX03">
-<label>親の場所（任意）</label><select id="locationParent"><option value="">なし（最上位）</option></select>
+<label>親の場所（任意）</label><div class="location-select-wrap"><select id="locationParent"><option value="">なし（最上位）</option></select></div>
 <label>メモ</label><textarea id="locationNotes" placeholder="例：季節衣装を保管"></textarea>
 <div class="actions"><button type="button" class="btn ghost" onclick="closeLocationForm()">キャンセル</button><button class="btn">保存</button></div>
 </form></div></div>
@@ -569,7 +598,7 @@ $("search").addEventListener("input",render);render();
 </style>
 
 <footer class="creator-footer">
-<div class="app-version">CosStock v1.5.1</div>
+<div class="app-version">CosStock v1.5.2</div>
 
   製作者 <a href="https://x.com/irohautkt_cos" target="_blank" rel="noopener noreferrer">@irohautkt_cos</a>
 </footer>
