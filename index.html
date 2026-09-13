@@ -36,32 +36,6 @@ label{display:block;font-size:12px;font-weight:700;margin:11px 0 5px}input,selec
 .location-card.level-2{margin-left:36px}
 .location-children{margin-left:4px}
 
-
-/* v1.6.7: onboarding popup typography/layout */
-.home-guide, .homeGuide, #homeGuide, .guide-modal, .onboarding-modal {
-  box-sizing: border-box;
-}
-.home-guide *, .homeGuide *, #homeGuide *, .guide-modal *, .onboarding-modal * {
-  box-sizing: border-box;
-}
-.home-guide p, .homeGuide p, #homeGuide p, .guide-modal p, .onboarding-modal p {
-  line-height: 1.7;
-  overflow-wrap: normal;
-  word-break: normal;
-  text-wrap: pretty;
-  margin-left: 0;
-  margin-right: 0;
-}
-.home-guide h2, .homeGuide h2, #homeGuide h2, .guide-modal h2, .onboarding-modal h2 {
-  line-height: 1.45;
-  word-break: keep-all;
-}
-.home-guide button, .homeGuide button, #homeGuide button, .guide-modal button, .onboarding-modal button {
-  white-space: normal;
-  word-break: keep-all;
-  line-height: 1.45;
-}
-
 </style>
 
 <style id="cosstock-kawaii-v13">
@@ -214,25 +188,96 @@ select#locationParent {
 @media (display-mode: standalone){#homeGuideModal{display:none!important;}}
 </style>
 
-<style>
-.guide-copy{
-  display:block;
-  line-height:1.7;
-  word-break:normal;
+<style id="costock-home-guide-v168">
+.home-guide-overlay{
+  position:fixed; inset:0; z-index:99999;
+  display:flex; align-items:center; justify-content:center;
+  padding:20px;
+  background:rgba(40,30,50,.38);
+}
+.home-guide-card{
+  width:min(92vw,380px);
+  max-height:calc(100vh - 40px);
+  overflow:auto;
+  background:#fff;
+  border-radius:24px;
+  padding:26px 22px 20px;
+  box-shadow:0 16px 50px rgba(0,0,0,.18);
+  text-align:center;
+  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+}
+.home-guide-title{
+  font-size:20px;
+  font-weight:700;
+  line-height:1.5;
+  letter-spacing:.01em;
+  margin:0 auto 14px;
+  word-break:keep-all;
   overflow-wrap:normal;
+}
+.home-guide-text{
+  font-size:15px;
+  line-height:1.75;
+  margin:0 auto 16px;
+  max-width:320px;
+  word-break:keep-all;
+  overflow-wrap:normal;
+}
+.home-guide-steps{
+  text-align:left;
+  font-size:14px;
+  line-height:1.8;
+  margin:0 auto 18px;
+  width:max-content;
+  max-width:100%;
+  word-break:keep-all;
+}
+.home-guide-primary,.home-guide-secondary{
+  width:100%;
+  border:0;
+  border-radius:14px;
+  padding:13px 12px;
+  font-size:15px;
+  font-weight:600;
+  line-height:1.45;
   white-space:normal;
-  text-wrap:pretty;
+  word-break:keep-all;
+}
+.home-guide-primary{ margin-bottom:10px; }
+.home-guide-secondary{
+  background:transparent;
+  font-weight:500;
+  padding-top:10px;
+  padding-bottom:8px;
+}
+@media(max-width:360px){
+  .home-guide-card{padding:23px 18px 17px;}
+  .home-guide-title{font-size:18px;}
+  .home-guide-text{font-size:14px;}
+  .home-guide-steps{font-size:13px;}
 }
 </style>
 
 </head>
 <body>
 <div id="homeGuideModal" role="dialog" aria-modal="true" aria-labelledby="homeGuideTitle">
-  <div class="home-guide-card">
-    <h2 id="homeGuideTitle">📱 最初にホーム画面へ追加してください</h2>
-    <p class="guide-lead">CoStockは、最初にホーム画面へ追加してから使うのがおすすめです。<br><b>追加前はアイテムや保管場所を登録しないでください。</b></p>
-    <div class="guide-steps">
-      <div class="guide-step"><div class="guide-num">1</div><div><b>Safariの「共有」ボタンをタップ</b><span>画面下の □↑ から共有メニューを開きます。</span></div></div>
+  
+<div id="homeGuide" class="home-guide-overlay" style="display:none;">
+  <div class="home-guide-card" role="dialog" aria-modal="true" aria-labelledby="homeGuideTitle">
+    <div class="home-guide-title" id="homeGuideTitle">📱 最初にホーム画面へ追加してください</div>
+    <div class="home-guide-text">
+      CoStockはホーム画面から使うことで、より快適に利用できます。
+    </div>
+    <div class="home-guide-steps">
+      <div>① Safariの「共有」をタップ</div>
+      <div>②「ホーム画面に追加」をタップ</div>
+      <div>③ ホーム画面のCoStockから起動</div>
+    </div>
+    <button type="button" id="homeGuideAdd" class="home-guide-primary">📱 ホーム画面に追加する方法を見る</button>
+    <button type="button" id="homeGuideBrowser" class="home-guide-secondary">ホームに追加せずブラウザで使う</button>
+  </div>
+</div>
+
       <div class="guide-step"><div class="guide-num">2</div><div><b>「ホーム画面に追加」を選択</b><span>CoStockをiPhoneのホーム画面に追加します。</span></div></div>
       <div class="guide-step"><div class="guide-num">3</div><div><b>ホーム画面のCoStockから起動</b><span>それからアイテム登録・保管場所登録を始めてください。</span></div></div>
     </div>
@@ -859,5 +904,37 @@ document.addEventListener("DOMContentLoaded", function(){
 
   製作者 <a href="https://x.com/irohautkt_cos" target="_blank" rel="noopener noreferrer">@irohautkt_cos</a>
 </footer>
+
+
+<script id="costock-home-guide-v168-js">
+(function(){
+  const guide = document.getElementById('homeGuide');
+  if(!guide) return;
+  const addBtn = document.getElementById('homeGuideAdd');
+  const browserBtn = document.getElementById('homeGuideBrowser');
+
+  function closeGuide(){
+    guide.style.display='none';
+    try{ localStorage.setItem('costock_home_guide_seen','1'); }catch(e){}
+  }
+  if(browserBtn) browserBtn.addEventListener('click', function(e){
+    e.preventDefault(); e.stopPropagation(); closeGuide();
+  });
+  if(addBtn) addBtn.addEventListener('click', function(e){
+    e.preventDefault(); e.stopPropagation();
+    // iOS Safari does not expose a reliable API to open Safari's Share sheet.
+    // Show a compact instruction instead of silently failing.
+    alert('Safari画面下部の「共有」ボタンから「ホーム画面に追加」を選択してください📱');
+  });
+
+  const standalone = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+  const iosStandalone = !!window.navigator.standalone;
+  let seen = false;
+  try{ seen = localStorage.getItem('costock_home_guide_seen') === '1'; }catch(e){}
+  if(!standalone && !iosStandalone && !seen){
+    guide.style.display='flex';
+  }
+})();
+</script>
 
 </body></html>
