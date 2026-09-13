@@ -746,16 +746,15 @@ function openHomeShare(){
   alert("このブラウザでは共有メニューを自動で開けません。Safari下部の「共有」から「ホーム画面に追加」を選択してください。");
 }
 function useInBrowser(){
-  // ホーム画面追加を選ばず、このブラウザで使うことを明示的に選択
+  // 「ブラウザで直接使う」を押したら、保存処理の成否に関係なく即座に案内を閉じる
+  const m=document.getElementById("homeGuideModal");
+  if(m){ m.style.display="none"; m.setAttribute("aria-hidden","true"); }
   try{localStorage.setItem("costock_home_guide_seen","1");}catch(e){}
-  closeHomeGuide(false);
 }
 function closeHomeGuide(save=true){
-  const m=$("homeGuideModal");
-  if(m) m.style.display="none";
-  if(save){
-    try{localStorage.setItem("costock_home_guide_seen","1");}catch(e){}
-  }
+  const m=document.getElementById("homeGuideModal");
+  if(m){ m.style.display="none"; m.setAttribute("aria-hidden","true"); }
+  if(save){ try{localStorage.setItem("costock_home_guide_seen","1");}catch(e){} }
 }
 function showHomeGuideIfNeeded(){
   if(isStandalone()) return;
@@ -763,11 +762,27 @@ function showHomeGuideIfNeeded(){
     if(localStorage.getItem("costock_home_guide_seen")) return;
   }catch(e){}
   const m=$("homeGuideModal");
-  if(m) m.style.display="flex";
+  if(m){ m.style.display="flex"; m.setAttribute("aria-hidden","false"); }
 }
 
 document.addEventListener("DOMContentLoaded", function(){
     showHomeGuideIfNeeded();
+    const homeGuideBrowserBtn = document.querySelector("#homeGuideModal .guide-browser");
+    if(homeGuideBrowserBtn){
+      homeGuideBrowserBtn.addEventListener("click", function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        useInBrowser();
+      });
+    }
+    const homeGuideCloseBtn = document.querySelector("#homeGuideModal .guide-close");
+    if(homeGuideCloseBtn){
+      homeGuideCloseBtn.addEventListener("click", function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        openHomeShare();
+      });
+    }
     const exportBtn = document.getElementById("backupExportBtn");
     const importBtn = document.getElementById("backupImportBtn");
     const input = document.getElementById("backupFileInput");
