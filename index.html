@@ -26,7 +26,7 @@ label{display:block;font-size:12px;font-weight:700;margin:11px 0 5px}input,selec
 .location-card{background:#fff;border:1px solid #eeeafa;border-radius:19px;padding:11px 12px;margin:9px 0;box-shadow:0 5px 18px #7357e80b}
 .location-card.level-1{margin:8px 0 8px 14px;border-left:3px solid #e5ddfb;box-shadow:none;background:#fcfaff}
 .location-card.level-2{margin:8px 0 8px 28px;border-left:3px solid #eee9fb;box-shadow:none;background:#fff}
-.location-head{display:flex;align-items:center;gap:8px}.location-toggle{width:30px;height:30px;border:0;border-radius:10px;background:#f3effc;color:#604ba0;font-size:18px;font-weight:700;flex:0 0 30px}.location-toggle.empty{visibility:hidden}.location-icon{font-size:22px}.location-name{font-weight:800;font-size:16px;flex:1}.location-path{font-size:11px;color:#91899f;margin:2px 0 0 68px}.location-actions{display:flex;gap:7px;margin-top:9px;padding-left:38px}.location-actions button{flex:1}.location-children{margin-top:5px;padding-left:5px;position:relative}.location-children:before{content:"";position:absolute;left:7px;top:0;bottom:12px;border-left:2px solid #eee8fb}.location-children > .location-card{position:relative}.location-children > .location-card:before{content:"";position:absolute;left:-8px;top:24px;width:12px;border-top:2px solid #eee8fb}
+.location-head{display:flex;align-items:center;gap:8px}.location-toggle{width:30px;height:30px;border:0;border-radius:10px;background:#f3effc;color:#604ba0;font-size:20px;font-weight:800;flex:0 0 30px;line-height:30px;text-align:center}.location-toggle.empty{visibility:hidden}.location-icon{font-size:22px}.location-name{font-weight:800;font-size:16px;flex:1}.location-path{font-size:11px;color:#91899f;margin:2px 0 0 68px}.location-actions{display:flex;gap:7px;margin-top:9px;padding-left:38px}.location-actions button{flex:1}.location-children{margin-top:5px;padding-left:5px;position:relative}.location-children:before{content:"";position:absolute;left:7px;top:0;bottom:12px;border-left:2px solid #eee8fb}.location-children > .location-card{position:relative}.location-children > .location-card:before{content:"";position:absolute;left:-8px;top:24px;width:12px;border-top:2px solid #eee8fb}
 
 .type-title{font-size:13px;font-weight:800;color:#6b5aa8;margin:2px 0 8px}
 .type-card{min-height:92px;transition:.15s;box-shadow:0 4px 14px rgba(115,87,232,.06)}
@@ -287,7 +287,7 @@ function renderLocations(){
     const expanded=expandedLocations.has(String(x.id));
     return `<div class="location-card level-${Math.min(level,2)}">
       <div class="location-head" onclick="${children.length?`toggleLocation(${x.id})`:''}">
-        <button type="button" class="location-toggle ${children.length?'':'empty'}" onclick="event.stopPropagation();${children.length?`toggleLocation(${x.id})`:''}">${children.length?(expanded?'':''):''}</button>
+        <button type="button" class="location-toggle ${children.length?'':'empty'}" onclick="event.stopPropagation();${children.length?`toggleLocation(${x.id})`:''}">${children.length?(expanded?'−':'+'):''}</button>
         <span class="location-icon">${locationIcon(x.name,level)}</span>
         <div class="location-name">${esc(x.name)}</div><span class="small">${used}件</span>
       </div>
@@ -626,7 +626,7 @@ $("search").addEventListener("input",render);render();
 </style>
 
 <footer class="creator-footer">
-<div class="app-version">CoStock v1.5.5</div>
+<div class="app-version">CoStock v1.5.6</div>
 
   製作者 <a href="https://x.com/irohautkt_cos" target="_blank" rel="noopener noreferrer">@irohautkt_cos</a>
 </footer>
