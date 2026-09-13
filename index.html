@@ -15,7 +15,7 @@ main{max-width:760px;margin:auto;padding:14px 15px 90px}.search{width:100%;borde
 .item{background:#fff;border-radius:16px;padding:12px;margin:9px 0;display:flex;gap:12px;box-shadow:0 2px 12px #00000008}.thumb{width:72px;height:72px;border-radius:12px;object-fit:cover;background:#eceaf0}.name{font-weight:700}.small{font-size:12px;color:#777;margin-top:3px}.ok{color:#168c48}.warn{color:#bd7500}.bad{color:#c93636}.empty{text-align:center;padding:35px;color:#888}
 .fab{position:fixed;right:18px;bottom:18px;border:0;border-radius:99px;background:#7357e8;color:#fff;padding:15px 20px;font-weight:800;box-shadow:0 8px 25px #7357e855}
 .modal{display:none;position:fixed;inset:0;background:#0007;align-items:center;justify-content:center;z-index:5;padding:10px}.sheet{background:#fff;border-radius:22px;width:100%;max-width:760px;max-height:calc(100dvh - 20px);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:20px 20px calc(20px + env(safe-area-inset-bottom))}.sheet h2{margin:0 0 12px}
-label{display:block;font-size:12px;font-weight:700;margin:11px 0 5px}input,select,textarea{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:15px;background:#fff}textarea{min-height:70px}.preview{width:100%;max-height:210px;object-fit:cover;border-radius:13px;margin-top:8px;display:none}.actions{display:flex;gap:8px;margin-top:15px}.actions button{flex:1}
+label{display:block;font-size:12px;font-weight:700;margin:11px 0 5px}input,select,textarea{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:15px;background:#fff}textarea{min-height:70px}.preview{width:100%;max-height:210px;object-fit:cover;border-radius:13px;margin-top:8px;display:none}.photo-preview-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}.photo-preview-grid .photo-slot{position:relative;aspect-ratio:1/1;border-radius:14px;overflow:hidden;background:#f0edf4;border:1px solid #e4dff0}.photo-preview-grid .photo-slot img{width:100%;height:100%;object-fit:cover;display:block}.photo-preview-grid .photo-slot button{position:absolute;right:6px;top:6px;width:30px;height:30px;border:0;border-radius:99px;background:#ffffffdd;color:#5c5264;font-size:18px;font-weight:800;line-height:30px;padding:0}.actions{display:flex;gap:8px;margin-top:15px}.actions button{flex:1}
 .detail{background:#fff;border-radius:18px;padding:16px;margin-top:12px}.detail img{width:100%;max-height:300px;object-fit:cover;border-radius:14px}.pill{display:inline-block;border-radius:99px;padding:5px 9px;background:#eeeaf8;font-size:12px;margin:4px 4px 0 0}
 .shoot-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:7px 0 14px}
 .shoot-option{display:flex;align-items:center;gap:7px;border:1px solid #e4e1ea;background:#fff;border-radius:12px;padding:10px;font-size:13px}
@@ -219,7 +219,8 @@ select#locationParent {
 <div class="photo-actions">
   <button type="button" class="photo-btn" onclick="document.getElementById('photoLibrary').click()">🖼️ 写真を選択</button>
 </div>
-<input id="photoLibrary" type="file" accept="image/*" style="display:none">
+<input id="photoLibrary" type="file" accept="image/*" multiple style="display:none">
+<div id="photoPreviewGrid" class="photo-preview-grid"></div>
 <img id="preview" class="preview">
 <label>メンテナンス・メモ</label><textarea id="notes" placeholder="例：尻尾を補修する、簪あり"></textarea>
 <div class="actions"><button type="button" class="btn ghost" onclick="closeForm()">キャンセル</button><button class="btn">保存</button></div>
@@ -241,7 +242,7 @@ const KEY="cosstock_v02";
 const LOC_KEY="cosstock_locations_v03";
 let items=JSON.parse(localStorage.getItem(KEY)||"[]");
 let locations=JSON.parse(localStorage.getItem(LOC_KEY)||"[]");
-let photo="",editing=null,editingLocation=null;
+let photo="",photos=[],editing=null,editingLocation=null;
 const $=id=>document.getElementById(id);
 function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 function persist(){localStorage.setItem(KEY,JSON.stringify(items));render()}
@@ -352,7 +353,8 @@ function openForm(id=null){
     setItemType(x.itemType || ((x.series||x.character) ? "character" : "common"), false);
     populateLocationSelect(x.location||"");
     $("category").value=x.category||$("category").options[0]?.value;
-    photo=x.photo||""; $("preview").src=photo; $("preview").style.display=photo?"block":"none";
+    photos=Array.isArray(x.photos)?x.photos.slice(0,4):(x.photo?[x.photo]:[]);
+    photo=photos[0]||""; renderPhotoPreviews();
   }else{
     $("form").reset();
     setItemType("character", false);
@@ -360,22 +362,50 @@ function openForm(id=null){
     $("series").value=""; $("character").value=""; $("outfitName").value="";
     document.querySelectorAll('input[name="shootingStatus"]').forEach(c=>c.checked=false);
     populateLocationSelect("");
-    photo=""; $("preview").style.display="none";
+    photo=""; photos=[]; renderPhotoPreviews();
   }
 }
-function closeForm(){$("modal").style.display="none";$("form").reset();photo="";editing=null;$("preview").style.display="none"}
-function handlePhotoFile(f){
-  if(!f)return;
-  let r=new FileReader();
-  r.onload=()=>{
-    photo=r.result;
-    $("preview").src=photo;
-    $("preview").style.display="block";
-  };
-  r.readAsDataURL(f);
+function closeForm(){$("modal").style.display="none";$("form").reset();photo="";photos=[];editing=null;renderPhotoPreviews()}
+function renderPhotoPreviews(){
+  const grid=$("photoPreviewGrid");
+  if(!grid)return;
+  grid.innerHTML=photos.map((src,i)=>`<div class="photo-slot"><img src="${src}"><button type="button" aria-label="写真${i+1}を削除" onclick="removePhoto(${i})">−</button></div>`).join("");
+  $("preview").style.display="none";
 }
-$("photoLibrary").addEventListener("change",e=>{
-  handlePhotoFile(e.target.files && e.target.files[0]);
+function removePhoto(index){
+  photos.splice(index,1);
+  photo=photos[0]||"";
+  renderPhotoPreviews();
+}
+function resizePhoto(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const img=new Image();
+      img.onload=()=>{
+        const max=1200;
+        const scale=Math.min(1,max/Math.max(img.width,img.height));
+        const w=Math.max(1,Math.round(img.width*scale));
+        const h=Math.max(1,Math.round(img.height*scale));
+        const canvas=document.createElement("canvas");
+        canvas.width=w; canvas.height=h;
+        const ctx=canvas.getContext("2d");
+        ctx.drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL("image/jpeg",0.82));
+      };
+      img.onerror=reject; img.src=reader.result;
+    };
+    reader.onerror=reject; reader.readAsDataURL(file);
+  });
+}
+$("photoLibrary").addEventListener("change",async e=>{
+  const files=Array.from(e.target.files||[]);
+  const slots=Math.max(0,4-photos.length);
+  if(files.length>slots){alert(`写真は最大4枚まで登録できます。${slots}枚だけ追加します。`);}
+  try{
+    for(const f of files.slice(0,slots)) photos.push(await resizePhoto(f));
+    photo=photos[0]||""; renderPhotoPreviews();
+  }catch(err){alert("写真の読み込みに失敗しました。");}
   e.target.value="";
 });
 $("form").addEventListener("submit",e=>{
@@ -399,7 +429,8 @@ $("form").addEventListener("submit",e=>{
    location:$('location').value,
    shootingStatus:type==="character"?Array.from(document.querySelectorAll('input[name="shootingStatus"]:checked')).map(c=>c.value):[],
    notes:$('notes').value,
-   photo,
+   photo:photos[0]||"",
+   photos:photos.slice(0,4),
    updated:new Date().toISOString()
  };
  if(editing){Object.assign(items.find(x=>x.id===editing),d)}else{items.unshift({...d,id:Date.now(),created:new Date().toISOString()})}persist();closeForm()})
@@ -464,7 +495,8 @@ function deleteLocation(id){
 function showDetail(id){
   let x=items.find(i=>i.id===id);
   const isCommon=x.itemType==="common";
-  $("detail").innerHTML=`${x.photo?`<img src="${x.photo}">`:""}<h2>${esc(itemDisplayName(x))}</h2><div class="pill">${esc(x.category)}</div><div class="pill">${esc(x.condition)}</div><div class="pill">${esc(x.status)}</div><div class="detail"><b> 保管場所</b><p>${esc(x.location?locationPath(Number(x.location)):"未登録")}</p>${!isCommon?`<b>作品名</b><p>${esc(x.series||"未登録")}</p><b>キャラ名</b><p>${esc(x.character||"未登録")}</p><b>衣装名</b><p>${esc(x.outfitName||"未登録")}</p>`:""}${x.notes?`<b>📝 メモ</b><p>${esc(x.notes)}</p>`:""}<div class="actions"><button class="btn" onclick="openForm(${id});closeDetail()">編集</button><button class="btn ghost" onclick="toggleOut(${id})">${x.status==="持ち出し中"?"↩ 返却する":"🧳 持ち出す"}</button><button class="btn ghost" onclick="del(${id})">削除</button></div></div>`;
+  const detailPhotos=Array.isArray(x.photos)?x.photos.slice(0,4):(x.photo?[x.photo]:[]);
+  $("detail").innerHTML=`${detailPhotos.length?`<div class="photo-preview-grid detail-photo-grid">${detailPhotos.map(src=>`<div class="photo-slot"><img src="${src}"></div>`).join("")}</div>`:""}<h2>${esc(itemDisplayName(x))}</h2><div class="pill">${esc(x.category)}</div><div class="pill">${esc(x.condition)}</div><div class="pill">${esc(x.status)}</div><div class="detail"><b> 保管場所</b><p>${esc(x.location?locationPath(Number(x.location)):"未登録")}</p>${!isCommon?`<b>作品名</b><p>${esc(x.series||"未登録")}</p><b>キャラ名</b><p>${esc(x.character||"未登録")}</p><b>衣装名</b><p>${esc(x.outfitName||"未登録")}</p>`:""}${x.notes?`<b>📝 メモ</b><p>${esc(x.notes)}</p>`:""}<div class="actions"><button class="btn" onclick="openForm(${id});closeDetail()">編集</button><button class="btn ghost" onclick="toggleOut(${id})">${x.status==="持ち出し中"?"↩ 返却する":"🧳 持ち出す"}</button><button class="btn ghost" onclick="del(${id})">削除</button></div></div>`;
   $("detailModal").style.display="flex"
 }
 function closeDetail(){$("detailModal").style.display="none"}
