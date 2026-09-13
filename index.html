@@ -108,7 +108,10 @@ button{letter-spacing:.01em;}
 </style>
 
 
-<style></style>
+<style id="coststock-list-collapse">
+.item-list-toggle{width:100%;margin:10px 0 4px;padding:13px 16px;border:1px solid #e1d9f5;border-radius:15px;background:#f3efff;color:#66568e;font-weight:800;font-size:15px;}
+.item-list-toggle:active{transform:scale(.99);}
+</style>
 
 
 <style>
@@ -306,18 +309,32 @@ function itemDisplayName(x){
   const parts=[x.series,x.character,x.outfitName].filter(Boolean);
   return parts.length ? parts.join(" ・ ") : (x.name || "キャラクターアイテム");
 }
+let showAllItems=false;
+function itemCreatedTime(x){
+  const t=Date.parse(x.created||"");
+  return Number.isFinite(t)?t:0;
+}
 function render(){
  let q=$("search").value.toLowerCase();
  let a=items.filter(x=>(itemDisplayName(x)+x.name+x.series+x.character+x.outfitName+locationPath(Number(x.location))+x.category+x.notes).toLowerCase().includes(q));
+ a.sort((x,y)=>itemCreatedTime(y)-itemCreatedTime(x));
+ const isSearching=!!q;
+ const visibleItems=isSearching||showAllItems?a:a.slice(0,5);
  $("count").textContent=items.length;
  $("warn").textContent=items.filter(x=>["要メンテナンス","要修理","使用不可"].includes(x.condition)).length;
  $("out").textContent=items.filter(x=>x.status==="持ち出し中").length;
- $("list").innerHTML=a.length?a.map(x=>`<div class="item" onclick="showDetail(${x.id})">
+ const listHtml=visibleItems.length?visibleItems.map(x=>`<div class="item" onclick="showDetail(${x.id})">
  ${x.photo?`<img class="thumb" src="${x.photo}">`:`<div class="thumb"></div>`}
  <div><div class="name">${esc(itemDisplayName(x))}</div><div class="small">${x.itemType==="common"?" 共通アイテム":" キャラクターアイテム"}</div>
  ${x.itemType==="common"?"":`<div class="small">${(x.shootingStatus||[]).map(s=>esc(s)).join("　")}</div>`}
- <div class="small ${cls(x.condition)}">● ${esc(x.condition)}　/　${esc(x.status)}</div><div class="small"> ${esc(x.location?locationPath(Number(x.location)):"場所未登録")}</div></div></div>`).join(""):`<div class="empty">まだアイテムがありません。<br>＋アイテム登録から最初の1件を登録しよう！</div>`;
+ <div class="small ${cls(x.condition)}">● ${esc(x.condition)}　/　${esc(x.status)}</div><div class="small"> ${esc(x.location?locationPath(Number(x.location)):"場所未登録")}</div></div></div>`).join(""):`<div class="empty">${isSearching?"検索に一致するアイテムがありません。":"まだアイテムがありません。<br>＋アイテム登録から最初の1件を登録しよう！"}</div>`;
+ const toggleHtml=!isSearching && items.length>5 ? `<button type="button" class="item-list-toggle" onclick="toggleAllItems()">${showAllItems?"− 5件表示に戻す":"＋ 全て表示"}</button>` : "";
+ $("list").innerHTML=listHtml+toggleHtml;
  renderLocations();
+}
+function toggleAllItems(){
+ showAllItems=!showAllItems;
+ render();
 }
 function setItemType(type, clearFields=true){
   if(type==='cosplay') type='character';
@@ -658,7 +675,7 @@ $("search").addEventListener("input",render);render();
 </style>
 
 <footer class="creator-footer">
-<div class="app-version">CoStock v1.5.6</div>
+<div class="app-version">CoStock v1.5.8</div>
 
   製作者 <a href="https://x.com/irohautkt_cos" target="_blank" rel="noopener noreferrer">@irohautkt_cos</a>
 </footer>
