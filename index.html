@@ -17,6 +17,8 @@ main{max-width:760px;margin:auto;padding:14px 15px 90px}.search{width:100%;borde
 .modal{display:none;position:fixed;inset:0;background:#0007;align-items:flex-end;z-index:5}.sheet{background:#fff;border-radius:22px 22px 0 0;width:100%;max-height:92vh;overflow:auto;padding:20px}.sheet h2{margin:0 0 12px}
 label{display:block;font-size:12px;font-weight:700;margin:11px 0 5px}input,select,textarea{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;font-size:15px;background:#fff}textarea{min-height:70px}.preview{width:100%;max-height:210px;object-fit:cover;border-radius:13px;margin-top:8px;display:none}.actions{display:flex;gap:8px;margin-top:15px}.actions button{flex:1}
 .detail{background:#fff;border-radius:18px;padding:16px;margin-top:12px}.detail img{width:100%;max-height:300px;object-fit:cover;border-radius:14px}.pill{display:inline-block;border-radius:99px;padding:5px 9px;background:#eeeaf8;font-size:12px;margin:4px 4px 0 0}
+.location-card{background:#fff;border-radius:16px;padding:13px;margin:8px 0;box-shadow:0 2px 12px #00000008}
+.location-name{font-weight:700}.location-path{font-size:12px;color:#777;margin-top:3px}.location-actions{display:flex;gap:7px;margin-top:9px}.location-actions button{flex:1}
 </style>
 </head>
 <body>
@@ -30,6 +32,9 @@ label{display:block;font-size:12px;font-weight:700;margin:11px 0 5px}input,selec
 </div>
 <div class="row"><h2>📦 アイテム</h2><button class="btn ghost" onclick="openForm()">＋ 登録</button></div>
 <div id="list"></div>
+
+<div class="row" style="margin-top:24px"><h2>📍 保管場所</h2><button class="btn ghost" onclick="openLocationForm()">＋ 場所登録</button></div>
+<div id="locationList"></div>
 </main>
 <button class="fab" onclick="openForm()">＋ アイテム登録</button>
 
@@ -42,36 +47,167 @@ label{display:block;font-size:12px;font-weight:700;margin:11px 0 5px}input,selec
 <label>種類</label><select id="category"><option>衣装</option><option>ウィッグ</option><option>靴</option><option>小物</option><option>撮影機材</option><option>販売物</option><option>その他</option></select>
 <label>コンディション</label><select id="condition"><option>新品</option><option selected>良好</option><option>使用感あり</option><option>要メンテナンス</option><option>要修理</option><option>使用不可</option></select>
 <label>ステータス</label><select id="status"><option>保管中</option><option>持ち出し中</option><option>クリーニング中</option><option>修理中</option><option>製作中</option><option>貸出中</option></select>
-<label>保管場所</label><input id="location" placeholder="例：自宅 ＞ 衣装部屋 ＞ 棚A ＞ BOX03">
+<label>保管場所</label>
+<select id="location"><option value="">未登録</option></select>
+<div class="small" style="margin-top:5px">保管場所は下の「📍 保管場所」から先に登録できます。</div>
 <label>写真</label><input id="photo" type="file" accept="image/*" capture="environment"><img id="preview" class="preview">
 <label>メンテナンス・メモ</label><textarea id="notes" placeholder="例：尻尾を補修する、簪あり"></textarea>
 <div class="actions"><button type="button" class="btn ghost" onclick="closeForm()">キャンセル</button><button class="btn">保存</button></div>
 </form></div></div>
 
+<div id="locationModal" class="modal" onclick="if(event.target===this)closeLocationForm()"><div class="sheet">
+<h2 id="locationFormTitle">保管場所を登録</h2>
+<form id="locationForm">
+<label>場所名</label><input id="locationName" required placeholder="例：衣装部屋・棚A・BOX03">
+<label>親の場所（任意）</label><select id="locationParent"><option value="">なし（最上位）</option></select>
+<label>メモ</label><textarea id="locationNotes" placeholder="例：季節衣装を保管"></textarea>
+<div class="actions"><button type="button" class="btn ghost" onclick="closeLocationForm()">キャンセル</button><button class="btn">保存</button></div>
+</form></div></div>
+
 <div id="detailModal" class="modal" onclick="if(event.target===this)closeDetail()"><div class="sheet"><div class="row"><h2>アイテム詳細</h2><button class="btn ghost" onclick="closeDetail()">閉じる</button></div><div id="detail"></div></div></div>
 
 <script>
-const KEY="cosstock_v02";let items=JSON.parse(localStorage.getItem(KEY)||"[]"),photo="",editing=null;
+const KEY="cosstock_v02";
+const LOC_KEY="cosstock_locations_v03";
+let items=JSON.parse(localStorage.getItem(KEY)||"[]");
+let locations=JSON.parse(localStorage.getItem(LOC_KEY)||"[]");
+let photo="",editing=null,editingLocation=null;
 const $=id=>document.getElementById(id);
 function esc(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
 function persist(){localStorage.setItem(KEY,JSON.stringify(items));render()}
 function cls(c){return ["新品","良好"].includes(c)?"ok":["使用感あり","要メンテナンス"].includes(c)?"warn":"bad"}
+// v0.2で自由入力されていた保管場所はそのまま文字列として残ります。
+function saveLocations(){localStorage.setItem(LOC_KEY,JSON.stringify(locations))}
+function locationPath(id){
+  const seen=new Set(), parts=[];
+  let cur=locations.find(x=>x.id===id);
+  while(cur && !seen.has(cur.id)){
+    seen.add(cur.id); parts.unshift(cur.name);
+    cur=locations.find(x=>x.id===cur.parentId);
+  }
+  return parts.join(" ＞ ");
+}
+function populateLocationSelect(selected=""){
+  const sel=$("location");
+  if(!sel)return;
+  sel.innerHTML='<option value="">未登録</option>'+locations.map(x=>`<option value="${x.id}">${esc(locationPath(x.id))}</option>`).join("");
+  sel.value=selected||"";
+}
+function populateParentSelect(selected=""){
+  const sel=$("locationParent");
+  sel.innerHTML='<option value="">なし（最上位）</option>'+locations.filter(x=>x.id!==editingLocation).map(x=>`<option value="${x.id}">${esc(locationPath(x.id))}</option>`).join("");
+  sel.value=selected||"";
+}
+function renderLocations(){
+  const el=$("locationList");
+  if(!locations.length){
+    el.innerHTML='<div class="empty">まだ保管場所がありません。<br>「＋ 場所登録」から作成しよう！</div>';
+    return;
+  }
+  el.innerHTML=locations.map(x=>{
+    const children=locations.filter(y=>y.parentId===x.id).length;
+    const used=items.filter(i=>String(i.location)===String(x.id)).length;
+    return `<div class="location-card">
+      <div class="location-name">📍 ${esc(x.name)}</div>
+      <div class="location-path">${esc(locationPath(x.id))}　・　${used}件${children?`　・　子${children}件`:""}</div>
+      ${x.notes?`<div class="small">📝 ${esc(x.notes)}</div>`:""}
+      <div class="location-actions">
+        <button class="btn ghost" onclick="openLocationForm(${x.id})">編集</button>
+        <button class="btn ghost" onclick="deleteLocation(${x.id})">削除</button>
+      </div>
+    </div>`;
+  }).join("");
+}
 function render(){
  let q=$("search").value.toLowerCase();
- let a=items.filter(x=>(x.name+x.series+x.character+x.location+x.category+x.notes).toLowerCase().includes(q));
- $("count").textContent=items.length;$("warn").textContent=items.filter(x=>["要メンテナンス","要修理","使用不可"].includes(x.condition)).length;$("out").textContent=items.filter(x=>x.status==="持ち出し中").length;
+ let a=items.filter(x=>(x.name+x.series+x.character+locationPath(Number(x.location))+x.category+x.notes).toLowerCase().includes(q));
+ $("count").textContent=items.length;
+ $("warn").textContent=items.filter(x=>["要メンテナンス","要修理","使用不可"].includes(x.condition)).length;
+ $("out").textContent=items.filter(x=>x.status==="持ち出し中").length;
  $("list").innerHTML=a.length?a.map(x=>`<div class="item" onclick="showDetail(${x.id})">
  ${x.photo?`<img class="thumb" src="${x.photo}">`:`<div class="thumb"></div>`}
  <div><div class="name">${esc(x.name)}</div><div class="small">${esc(x.series)}${x.character?" ・ "+esc(x.character):""}</div>
- <div class="small ${cls(x.condition)}">● ${esc(x.condition)}　/　${esc(x.status)}</div><div class="small">📍 ${esc(x.location||"場所未登録")}</div></div></div>`).join(""):`<div class="empty">まだアイテムがありません。<br>＋アイテム登録から最初の1件を登録しよう！</div>`;
+ <div class="small ${cls(x.condition)}">● ${esc(x.condition)}　/　${esc(x.status)}</div><div class="small">📍 ${esc(x.location?locationPath(Number(x.location)):"場所未登録")}</div></div></div>`).join(""):`<div class="empty">まだアイテムがありません。<br>＋アイテム登録から最初の1件を登録しよう！</div>`;
+ renderLocations();
 }
-function openForm(id=null){editing=id; $("formTitle").textContent=id?"アイテムを編集":"アイテムを登録"; $("modal").style.display="flex";
- if(id){let x=items.find(i=>i.id===id);for(let k of ["name","series","character","category","condition","status","location","notes"])$(k).value=x[k]||"";photo=x.photo||"";$("preview").src=photo;$("preview").style.display=photo?"block":"none"}}
+function openForm(id=null){
+ editing=id;
+ $("formTitle").textContent=id?"アイテムを編集":"アイテムを登録";
+ $("modal").style.display="flex";
+ if(id){
+   let x=items.find(i=>i.id===id);
+   for(let k of ["name","series","character","category","condition","status","notes"])$(k).value=x[k]||"";
+   populateLocationSelect(x.location||"");
+   photo=x.photo||"";
+   $("preview").src=photo;
+   $("preview").style.display=photo?"block":"none";
+ }else{
+   populateLocationSelect("");
+ }
+}
 function closeForm(){$("modal").style.display="none";$("form").reset();photo="";editing=null;$("preview").style.display="none"}
 $("photo").addEventListener("change",e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{photo=r.result;$("preview").src=photo;$("preview").style.display="block"};r.readAsDataURL(f)})
 $("form").addEventListener("submit",e=>{e.preventDefault();let d={name:$("name").value,series:$("series").value,character:$("character").value,category:$("category").value,condition:$("condition").value,status:$("status").value,location:$("location").value,notes:$("notes").value,photo,updated:new Date().toISOString()};
  if(editing){Object.assign(items.find(x=>x.id===editing),d)}else{items.unshift({...d,id:Date.now(),created:new Date().toISOString()})}persist();closeForm()})
-function showDetail(id){let x=items.find(i=>i.id===id);$("detail").innerHTML=`${x.photo?`<img src="${x.photo}">`:""}<h2>${esc(x.name)}</h2><div class="pill">${esc(x.category)}</div><div class="pill">${esc(x.condition)}</div><div class="pill">${esc(x.status)}</div><div class="detail"><b>📍 保管場所</b><p>${esc(x.location||"未登録")}</p><b>作品・キャラクター</b><p>${esc(x.series||"")} ${esc(x.character||"")}</p>${x.notes?`<b>📝 メモ</b><p>${esc(x.notes)}</p>`:""}<div class="actions"><button class="btn" onclick="openForm(${id});closeDetail()">編集</button><button class="btn ghost" onclick="toggleOut(${id})">${x.status==="持ち出し中"?"↩ 返却する":"🧳 持ち出す"}</button><button class="btn ghost" onclick="del(${id})">削除</button></div></div>`;$("detailModal").style.display="flex"}
+function openLocationForm(id=null){
+  editingLocation=id;
+  $("locationFormTitle").textContent=id?"保管場所を編集":"保管場所を登録";
+  $("locationModal").style.display="flex";
+  if(id){
+    const x=locations.find(v=>v.id===id);
+    $("locationName").value=x.name||"";
+    $("locationNotes").value=x.notes||"";
+    populateParentSelect(x.parentId||"");
+  }else{
+    $("locationForm").reset();
+    populateParentSelect("");
+  }
+}
+function closeLocationForm(){
+  $("locationModal").style.display="none";
+  $("locationForm").reset();
+  editingLocation=null;
+}
+$("locationForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const name=$("locationName").value.trim();
+  const parentId=$("locationParent").value?Number($("locationParent").value):null;
+  if(!name)return;
+  // Prevent circular hierarchy when editing.
+  if(editingLocation && parentId===editingLocation){
+    alert("自分自身を親にはできません。");
+    return;
+  }
+  const d={name,parentId,notes:$("locationNotes").value.trim(),updated:new Date().toISOString()};
+  if(editingLocation){
+    Object.assign(locations.find(x=>x.id===editingLocation),d);
+  }else{
+    locations.push({...d,id:Date.now(),created:new Date().toISOString()});
+  }
+  saveLocations();
+  closeLocationForm();
+  populateLocationSelect("");
+  render();
+});
+function deleteLocation(id){
+  const used=items.some(x=>String(x.location)===String(id));
+  const children=locations.some(x=>x.parentId===id);
+  if(used){
+    alert("この保管場所を使っているアイテムがあります。先にアイテムの保管場所を変更してください。");
+    return;
+  }
+  if(children){
+    alert("子の保管場所があります。先に子の場所を削除・移動してください。");
+    return;
+  }
+  if(confirm("この保管場所を削除しますか？")){
+    locations=locations.filter(x=>x.id!==id);
+    saveLocations();
+    render();
+  }
+}
+
+function showDetail(id){let x=items.find(i=>i.id===id);$("detail").innerHTML=`${x.photo?`<img src="${x.photo}">`:""}<h2>${esc(x.name)}</h2><div class="pill">${esc(x.category)}</div><div class="pill">${esc(x.condition)}</div><div class="pill">${esc(x.status)}</div><div class="detail"><b>📍 保管場所</b><p>${esc(x.location?locationPath(Number(x.location)):"未登録")}</p><b>作品・キャラクター</b><p>${esc(x.series||"")} ${esc(x.character||"")}</p>${x.notes?`<b>📝 メモ</b><p>${esc(x.notes)}</p>`:""}<div class="actions"><button class="btn" onclick="openForm(${id});closeDetail()">編集</button><button class="btn ghost" onclick="toggleOut(${id})">${x.status==="持ち出し中"?"↩ 返却する":"🧳 持ち出す"}</button><button class="btn ghost" onclick="del(${id})">削除</button></div></div>`;$("detailModal").style.display="flex"}
 function closeDetail(){$("detailModal").style.display="none"}
 function toggleOut(id){let x=items.find(i=>i.id===id);x.status=x.status==="持ち出し中"?"保管中":"持ち出し中";persist();closeDetail();showDetail(id)}
 function del(id){if(confirm("このアイテムを削除しますか？")){items=items.filter(x=>x.id!==id);persist();closeDetail()}}
