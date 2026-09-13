@@ -725,19 +725,25 @@ $("search").addEventListener("input",render);render();
 function isStandalone(){
   return window.matchMedia && window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 }
-async function openHomeShare(){
-  // iPhoneのSafariではWeb Share APIから共有シートを開く
+function openHomeShare(){
+  // iPhone Safariの共有シートを、ボタンのタップを起点に直接呼び出す
+  // Web Share APIはユーザー操作中に同期的に呼び出す必要があるため、
+  // 不要なawaitや前処理を入れない。
   if(typeof navigator.share === "function"){
-    try{
-      await navigator.share({url:window.location.href});
+    navigator.share({
+      title: "CoStock",
+      text: "CoStockをホーム画面に追加",
+      url: window.location.href
+    }).then(function(){
       closeHomeGuide();
-      return;
-    }catch(e){
-      // キャンセル時は案内を閉じず、そのままにする
+    }).catch(function(e){
+      // 共有シートを閉じただけなら案内は残す
       if(e && e.name === "AbortError") return;
-    }
+      alert("共有メニューを開けませんでした。Safari下部の「共有」から「ホーム画面に追加」を選択してください。");
+    });
+    return;
   }
-  alert("共有メニューを自動で開けない環境です。Safariの「共有」→「ホーム画面に追加」から追加してください。");
+  alert("このブラウザでは共有メニューを自動で開けません。Safari下部の「共有」から「ホーム画面に追加」を選択してください。");
 }
 function useInBrowser(){
   // ホーム画面追加を選ばず、このブラウザで使うことを明示的に選択
