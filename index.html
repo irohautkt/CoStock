@@ -292,6 +292,7 @@ select#locationParent {
 <div id="typeSelector" class="type-grid">
 <button type="button" id="typeCharacter" class="type-card selected" onclick="setItemType('character')"><b>🎀 キャラクターアイテム</b><span>作品・キャラ・衣装を登録</span></button>
 <button type="button" id="typeCommon" class="type-card" onclick="setItemType('common')"><b>📦 共通アイテム</b><span>キャラに紐づかない共通物</span></button>
+<button type="button" id="typeContact" class="type-card" onclick="setItemType('contact')"><b>👁️ カラコン</b><span>ブランド・カラー・度数を管理</span></button>
 </div>
 <form id="form">
 <div id="commonNameField">
@@ -299,6 +300,12 @@ select#locationParent {
 <div class="small" style="margin-top:5px">共通アイテムは名前を付けて管理します。</div>
 <label id="commonQuantityFieldLabel">個数</label><input id="quantity" type="number" min="1" step="1" value="1" inputmode="numeric" placeholder="例：3">
 <div class="small" style="margin-top:5px">同じ共通アイテムを複数持っている場合に入力してください。</div>
+</div>
+<div id="contactFields" style="display:none">
+<label>ブランド名</label><input id="lensBrand" placeholder="例：エティア、TOPARDS">
+<label>カラー</label><input id="lensColor" placeholder="例：アクアマリン">
+<label>度数</label><input id="lensPower" placeholder="例：度なし、-3.50">
+<label>個数（レンズ枚数）</label><input id="lensQuantity" type="number" min="0" step="1" value="1" inputmode="numeric" placeholder="例：2">
 </div>
 <div id="characterFields">
 <label>作品名</label><input id="series" placeholder="例：hololive">
@@ -423,6 +430,7 @@ function renderLocations(){
   el.innerHTML=roots.map(x=>node(x,0)).join('');
 }
 function itemDisplayName(x){
+  if(x.itemType==="contact") return [x.lensBrand,x.lensColor].filter(Boolean).join(" ・ ") || "カラコン（名称未設定）";
   if(x.itemType==="common") return x.name || "名称未設定";
   const parts=[x.series,x.character,x.outfitName].filter(Boolean);
   return parts.length ? parts.join(" ・ ") : (x.name || "キャラクターアイテム");
@@ -443,7 +451,7 @@ function render(){
  $("out").textContent=items.filter(x=>x.status==="持ち出し中").length;
  const listHtml=visibleItems.length?visibleItems.map(x=>`<div class="item" onclick="showDetail(${x.id})">
  ${x.photo?`<img class="thumb" src="${x.photo}">`:`<div class="thumb"></div>`}
- <div><div class="name">${esc(itemDisplayName(x))}</div><div class="small">${x.itemType==="common"?` 共通アイテム　/　個数 ${Math.max(1,Number(x.quantity)||1)}個`:" キャラクターアイテム"}</div>
+ <div><div class="name">${esc(itemDisplayName(x))}</div><div class="small">${x.itemType==="common"?` 共通アイテム　/　個数 ${Math.max(1,Number(x.quantity)||1)}個`:x.itemType==="contact"?` カラコン　/　度数 ${esc(x.lensPower||"未登録")}　/　${Math.max(0,Number(x.lensQuantity)||0)}枚`:" キャラクターアイテム"}</div>
  ${x.itemType==="common"?"":`<div class="small">${(x.shootingStatus||[]).map(s=>esc(s)).join("　")}</div>`}
  <div class="small ${cls(x.condition)}">● ${esc(x.condition)}　/　${esc(x.status)}</div><div class="small"> ${esc(x.location?locationPath(Number(x.location)):"場所未登録")}</div></div></div>`).join(""):`<div class="empty">${isSearching?"検索に一致するアイテムがありません。":"まだアイテムがありません。<br>＋アイテム登録から最初の1件を登録しよう！"}</div>`;
  const toggleHtml=!isSearching && items.length>5 ? `<button type="button" class="item-list-toggle" onclick="toggleAllItems()">${showAllItems?"− 5件表示に戻す":"＋ 全て表示"}</button>` : "";
@@ -459,7 +467,9 @@ function setItemType(type, clearFields=true){
   $("itemType").value=type;
   $("typeCharacter").classList.toggle("selected",type==="character");
   $("typeCommon").classList.toggle("selected",type==="common");
+  $("typeContact").classList.toggle("selected",type==="contact");
   $("characterFields").style.display=type==="character"?"block":"none";
+  $("contactFields").style.display=type==="contact"?"block":"none";
   $("commonNameField").style.display=type==="common"?"block":"none";
   $("commonQuantityFieldLabel").style.display=type==="common"?"block":"none";
   $("quantity").style.display=type==="common"?"block":"none";
@@ -469,13 +479,13 @@ function setItemType(type, clearFields=true){
   const current=category.value;
   const opts=type==="character"
     ? ["衣装","ウィッグ","靴","キャラクター小物","その他"]
-    : ["共通小物","撮影機材","販売物","裁縫・製作用品","その他"];
+    : type==="contact" ? ["カラコン"] : ["共通小物","撮影機材","販売物","裁縫・製作用品","その他"];
   category.innerHTML=opts.map(v=>`<option>${v}</option>`).join('');
   if(opts.includes(current)) category.value=current;
-  if(type==="common" && clearFields){
+  if(type!=="character" && clearFields){
     $("series").value=""; $("character").value=""; $("outfitName").value="";
   }
-  if(type==="character" && clearFields){
+  if(type!=="common" && clearFields){
     $("name").value="";
   }
 }
@@ -485,7 +495,8 @@ function openForm(id=null){
   $("modal").style.display="flex";
   if(id){
     let x=items.find(i=>i.id===id);
-    for(let k of ["name","series","character","outfitName","condition","status","notes"]) $(k).value=x[k]||"";
+    for(let k of ["name","series","character","outfitName","condition","status","notes","lensBrand","lensColor","lensPower"]) if($(k)) $(k).value=x[k]||"";
+    $("lensQuantity").value=Number(x.lensQuantity)||1;
     $("quantity").value=(x.itemType==="common" ? Math.max(1, Number(x.quantity)||1) : 1);
     document.querySelectorAll('input[name="shootingStatus"]').forEach(c=>c.checked=(x.shootingStatus||[]).includes(c.value));
     setItemType(x.itemType || ((x.series||x.character) ? "character" : "common"), false);
@@ -579,6 +590,10 @@ $("form").addEventListener("submit",async e=>{
  }
  let d={
    itemType:type,
+   lensBrand:type==="contact"?$("lensBrand").value.trim():"",
+   lensColor:type==="contact"?$("lensColor").value.trim():"",
+   lensPower:type==="contact"?$("lensPower").value.trim():"",
+   lensQuantity:type==="contact"?Math.max(0,parseInt($("lensQuantity").value,10)||0):0,
    name:type==="common"?commonName:"",
    quantity:type==="common"?Math.max(1,parseInt($("quantity").value,10)||1):1,
    series:type==="character"?$('series').value.trim():"",
@@ -659,10 +674,31 @@ function deleteLocation(id){
 function showDetail(id){
   let x=items.find(i=>i.id===id);
   const isCommon=x.itemType==="common";
+  const isContact=x.itemType==="contact";
   const detailPhotos=Array.isArray(x.photos)?x.photos.slice(0,4):(x.photo?[x.photo]:[]);
-  $("detail").innerHTML=`${detailPhotos.length?`<div class="photo-preview-grid detail-photo-grid">${detailPhotos.map(src=>`<div class="photo-slot"><img src="${src}"></div>`).join("")}</div>`:""}<h2>${esc(itemDisplayName(x))}</h2><div class="pill">${esc(x.category)}</div><div class="pill">${esc(x.condition)}</div><div class="pill">${esc(x.status)}</div><div class="detail"><b> 保管場所</b><p>${esc(x.location?locationPath(Number(x.location)):"未登録")}</p>${isCommon?`<b>個数</b><p>${Math.max(1,Number(x.quantity)||1)}個</p>`:""}${!isCommon?`<b>作品名</b><p>${esc(x.series||"未登録")}</p><b>キャラ名</b><p>${esc(x.character||"未登録")}</p><b>衣装名</b><p>${esc(x.outfitName||"未登録")}</p>`:""}${x.notes?`<b>📝 メモ</b><p>${esc(x.notes)}</p>`:""}<div class="actions"><button class="btn" onclick="openForm(${id});closeDetail()">編集</button><button class="btn ghost" onclick="toggleOut(${id})">${x.status==="持ち出し中"?"↩ 返却する":"🧳 持ち出す"}</button><button class="btn ghost" onclick="del(${id})">削除</button></div></div>`;
+  $("detail").innerHTML=`${detailPhotos.length?`<div class="photo-preview-grid detail-photo-grid">${detailPhotos.map(src=>`<div class="photo-slot"><img src="${src}"></div>`).join("")}</div>`:""}<h2>${esc(itemDisplayName(x))}</h2><div class="pill">${esc(x.category)}</div><div class="pill">${esc(x.condition)}</div><div class="pill">${esc(x.status)}</div><div class="detail"><b> 保管場所</b><p>${esc(x.location?locationPath(Number(x.location)):"未登録")}</p>${isCommon?`<b>個数</b><p>${Math.max(1,Number(x.quantity)||1)}個</p>`:""}${isContact?`<b>ブランド名</b><p>${esc(x.lensBrand||"未登録")}</p><b>カラー</b><p>${esc(x.lensColor||"未登録")}</p><b>度数</b><p>${esc(x.lensPower||"未登録")}</p><b>個数（レンズ枚数）</b><p>${Math.max(0,Number(x.lensQuantity)||0)}枚</p>`:""}${!isCommon&&!isContact?`<b>作品名</b><p>${esc(x.series||"未登録")}</p><b>キャラ名</b><p>${esc(x.character||"未登録")}</p><b>衣装名</b><p>${esc(x.outfitName||"未登録")}</p>`:""}${x.notes?`<b>📝 メモ</b><p>${esc(x.notes)}</p>`:""}<div class="actions"><button class="btn" onclick="openForm(${id});closeDetail()">編集</button>${!isCommon&&!isContact?`<button class="btn ghost" onclick="copyItem(${id});closeDetail()">📋 コピー</button>`:""}<button class="btn ghost" onclick="toggleOut(${id})">${x.status==="持ち出し中"?"↩ 返却する":"🧳 持ち出す"}</button><button class="btn ghost" onclick="del(${id})">削除</button></div></div>`;
   $("detailModal").style.display="flex"
 }
+function copyItem(id){
+  const x=items.find(i=>i.id===id);
+  if(!x) return;
+  editing=null;
+  $("formTitle").textContent="アイテムを登録";
+  $("form").reset();
+  photo=""; photos=[];
+  renderPhotoPreviews();
+  setItemType("character", false);
+  $("series").value=x.series||"";
+  $("character").value=x.character||"";
+  $("outfitName").value="";
+  $("name").value="";
+  $("quantity").value=1;
+  document.querySelectorAll('input[name="shootingStatus"]').forEach(c=>c.checked=false);
+  $("notes").value="";
+  populateLocationSelect("");
+  $("modal").style.display="flex";
+}
+window.copyItem=copyItem;
 function closeDetail(){$("detailModal").style.display="none"}
 function toggleOut(id){let x=items.find(i=>i.id===id);x.status=x.status==="持ち出し中"?"保管中":"持ち出し中";persist();closeDetail();showDetail(id)}
 function del(id){if(confirm("このアイテムを削除しますか？")){items=items.filter(x=>x.id!==id);persist();closeDetail()}}
@@ -881,7 +917,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </style>
 
 <footer class="creator-footer">
-<div class="app-version">CoStock v1.6.11</div>
+<div class="app-version">CoStock v1.6.15</div>
 
   製作者 <a href="https://x.com/irohautkt_cos" target="_blank" rel="noopener noreferrer">@irohautkt_cos</a>
 </footer>
