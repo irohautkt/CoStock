@@ -660,29 +660,9 @@ function showDetail(id){
   let x=items.find(i=>i.id===id);
   const isCommon=x.itemType==="common";
   const detailPhotos=Array.isArray(x.photos)?x.photos.slice(0,4):(x.photo?[x.photo]:[]);
-  $("detail").innerHTML=`${detailPhotos.length?`<div class="photo-preview-grid detail-photo-grid">${detailPhotos.map(src=>`<div class="photo-slot"><img src="${src}"></div>`).join("")}</div>`:""}<h2>${esc(itemDisplayName(x))}</h2><div class="pill">${esc(x.category)}</div><div class="pill">${esc(x.condition)}</div><div class="pill">${esc(x.status)}</div><div class="detail"><b> 保管場所</b><p>${esc(x.location?locationPath(Number(x.location)):"未登録")}</p>${isCommon?`<b>個数</b><p>${Math.max(1,Number(x.quantity)||1)}個</p>`:""}${!isCommon?`<b>作品名</b><p>${esc(x.series||"未登録")}</p><b>キャラ名</b><p>${esc(x.character||"未登録")}</p><b>衣装名</b><p>${esc(x.outfitName||"未登録")}</p>`:""}${x.notes?`<b>📝 メモ</b><p>${esc(x.notes)}</p>`:""}<div class="actions"><button class="btn" onclick="openForm(${id});closeDetail()">編集</button>${!isCommon?`<button class="btn ghost" onclick="copyItem(${id});closeDetail()">📋 コピー</button>`:""}<button class="btn ghost" onclick="toggleOut(${id})">${x.status==="持ち出し中"?"↩ 返却する":"🧳 持ち出す"}</button><button class="btn ghost" onclick="del(${id})">削除</button></div></div>`;
+  $("detail").innerHTML=`${detailPhotos.length?`<div class="photo-preview-grid detail-photo-grid">${detailPhotos.map(src=>`<div class="photo-slot"><img src="${src}"></div>`).join("")}</div>`:""}<h2>${esc(itemDisplayName(x))}</h2><div class="pill">${esc(x.category)}</div><div class="pill">${esc(x.condition)}</div><div class="pill">${esc(x.status)}</div><div class="detail"><b> 保管場所</b><p>${esc(x.location?locationPath(Number(x.location)):"未登録")}</p>${isCommon?`<b>個数</b><p>${Math.max(1,Number(x.quantity)||1)}個</p>`:""}${!isCommon?`<b>作品名</b><p>${esc(x.series||"未登録")}</p><b>キャラ名</b><p>${esc(x.character||"未登録")}</p><b>衣装名</b><p>${esc(x.outfitName||"未登録")}</p>`:""}${x.notes?`<b>📝 メモ</b><p>${esc(x.notes)}</p>`:""}<div class="actions"><button class="btn" onclick="openForm(${id});closeDetail()">編集</button><button class="btn ghost" onclick="toggleOut(${id})">${x.status==="持ち出し中"?"↩ 返却する":"🧳 持ち出す"}</button><button class="btn ghost" onclick="del(${id})">削除</button></div></div>`;
   $("detailModal").style.display="flex"
 }
-function copyItem(id){
-  const x=items.find(i=>i.id===id);
-  if(!x) return;
-  editing=null;
-  $("formTitle").textContent="アイテムを登録";
-  $("form").reset();
-  photo=""; photos=[];
-  renderPhotoPreviews();
-  setItemType("character", false);
-  $("series").value=x.series||"";
-  $("character").value=x.character||"";
-  $("outfitName").value="";
-  $("name").value="";
-  $("quantity").value=1;
-  document.querySelectorAll('input[name="shootingStatus"]').forEach(c=>c.checked=false);
-  $("notes").value="";
-  populateLocationSelect("");
-  $("modal").style.display="flex";
-}
-window.copyItem=copyItem;
 function closeDetail(){$("detailModal").style.display="none"}
 function toggleOut(id){let x=items.find(i=>i.id===id);x.status=x.status==="持ち出し中"?"保管中":"持ち出し中";persist();closeDetail();showDetail(id)}
 function del(id){if(confirm("このアイテムを削除しますか？")){items=items.filter(x=>x.id!==id);persist();closeDetail()}}
@@ -901,7 +881,7 @@ document.addEventListener("DOMContentLoaded", function(){
 </style>
 
 <footer class="creator-footer">
-<div class="app-version">CoStock v1.6.14</div>
+<div class="app-version">CoStock v1.6.11</div>
 
   製作者 <a href="https://x.com/irohautkt_cos" target="_blank" rel="noopener noreferrer">@irohautkt_cos</a>
 </footer>
