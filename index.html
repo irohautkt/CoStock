@@ -37,11 +37,6 @@ label{display:block;font-size:12px;font-weight:700;margin:11px 0 5px}input,selec
 .location-children{margin-left:4px}
 
 
-/* v1.6.19 custom item ordering */
-#costockSortToggle { margin: 8px 0; }
-.costock-sort-handle { cursor: grab; touch-action: none; user-select: none; }
-.costock-sort-active .costock-sort-handle { display: inline-flex !important; }
-.costock-sort-placeholder { opacity: .45; outline: 2px dashed currentColor; }
 </style>
 
 <style id="cosstock-kawaii-v13">
@@ -261,7 +256,7 @@ select#locationParent {
 
 </head>
 <body>
-<button id="costockSortToggle" type="button">並び替え</button>
+
 
 <div id="homeGuideModal" role="dialog" aria-modal="true" aria-labelledby="homeGuideTitle">
   <div class="home-guide-card">
@@ -286,7 +281,7 @@ select#locationParent {
 <div class="stat"><b id="warn">0</b><span>要メンテ</span></div>
 <div class="stat"><b id="out">0</b><span>持ち出し中</span></div>
 </div>
-<div class="row"><h2> 📦 アイテム</h2><button class="btn ghost" onclick="openForm()">＋ 登録</button></div>
+<div class="row"><h2> 📦 アイテム</h2><div><button class="btn ghost" id="costockSortToggle" type="button">並び替え</button> <button class="btn ghost" onclick="openForm()">＋ 登録</button></div></div>
 <div id="list"></div>
 
 <div class="row" style="margin-top:24px"><h2> 🗂️ 保管場所</h2><button class="btn ghost" onclick="openLocationForm()">＋ 場所登録</button></div>
@@ -474,13 +469,19 @@ function itemCreatedTime(x){
 function render(){
  let q=$("search").value.toLowerCase();
  let a=items.filter(x=>(itemDisplayName(x)+x.name+x.series+x.character+x.outfitName+locationPath(Number(x.location))+x.category+x.notes).toLowerCase().includes(q));
- a.sort((x,y)=>itemCreatedTime(y)-itemCreatedTime(x));
+ 
+ const savedOrder=(()=>{try{return JSON.parse(localStorage.getItem("costock_custom_order")||"[]")}catch(e){return []}})();
+ a.sort((x,y)=>{
+   const xi=savedOrder.indexOf(String(x.id)), yi=savedOrder.indexOf(String(y.id));
+   if(xi>=0||yi>=0){if(xi<0)return 1;if(yi<0)return -1;return xi-yi;}
+   return itemCreatedTime(y)-itemCreatedTime(x);
+ });
  const isSearching=!!q;
  const visibleItems=isSearching||showAllItems?a:a.slice(0,5);
  $("count").textContent=items.length;
  $("warn").textContent=items.filter(x=>["要メンテナンス","要修理","使用不可"].includes(x.condition)).length;
  $("out").textContent=items.filter(x=>x.status==="持ち出し中").length;
- const listHtml=visibleItems.length?visibleItems.map(x=>`<div class="item" onclick="showDetail(${x.id})">
+ const listHtml=visibleItems.length?visibleItems.map(x=>`<div class="item" data-item-id="${x.id}" onclick="if(!window.costockReorderMode)showDetail(${x.id})">
  ${x.photo?`<img class="thumb" src="${x.photo}">`:`<div class="thumb"></div>`}
  <div><div class="name">${esc(itemDisplayName(x))}</div><div class="small">${x.itemType==="common"?` 共通アイテム　/　個数 ${Math.max(1,Number(x.quantity)||1)}個`:x.itemType==="contact"?` カラコン　/　度数 ${esc(x.lensPower||"未登録")}　/　${Math.max(0,Number(x.lensQuantity)||0)}枚`:" キャラクターアイテム"}</div>
  ${x.itemType==="common"?"":`<div class="small">${(x.shootingStatus||[]).map(s=>esc(s)).join("　")}</div>`}
@@ -999,92 +1000,59 @@ document.addEventListener("DOMContentLoaded", function(){
 })();
 </script>
 
+
 <script>
-
-/* CoStock v1.6.19: custom order persistence */
-(() => {
-  const ORDER_KEY = 'costock_custom_order';
-  let sortMode = false;
-  let dragged = null;
-  const readOrder = () => {
-    try { return JSON.parse(localStorage.getItem(ORDER_KEY) || '[]'); } catch (_) { return []; }
-  };
-  const saveOrder = (ids) => {
-    try { localStorage.setItem(ORDER_KEY, JSON.stringify(ids)); } catch (_) {}
-  };
-  const findList = () => {
-    const selectors = ['#itemList', '#itemsList', '#items', '#itemListContainer', '#itemsContainer', '.item-list', '.items-list'];
-    for (const s of selectors) { const el = document.querySelector(s); if (el) return el; }
-    return null;
-  };
-  const cards = (list) => Array.from(list.children).filter(el => el.nodeType === 1);
-  const getId = (el, index) => el.dataset.id || el.dataset.itemId || el.getAttribute('data-id') ||
-    el.querySelector('[data-id]')?.getAttribute('data-id') || el.id || `card-${index}`;
-  const applySavedOrder = () => {
-    const list = findList();
-    if (!list) return;
-    const order = readOrder();
-    const children = cards(list);
-    const keyed = children.map((el, i) => ({el, id: getId(el, i), i}));
-    keyed.sort((a,b) => {
-      const ai = order.indexOf(a.id), bi = order.indexOf(b.id);
-      if (ai < 0 && bi < 0) return a.i - b.i;
-      if (ai < 0) return 1;
-      if (bi < 0) return -1;
-      return ai - bi;
-    });
-    keyed.forEach(x => list.appendChild(x.el));
-  };
-  const enableSort = () => {
-    const list = findList();
-    if (!list) return;
-    list.classList.toggle('costock-sort-active', sortMode);
-    const children = cards(list);
-    children.forEach((el, i) => {
-      let handle = el.querySelector('.costock-sort-handle');
-      if (!handle) {
-        handle = document.createElement('span');
-        handle.className = 'costock-sort-handle';
-        handle.textContent = '↕';
-        handle.setAttribute('aria-label', 'ドラッグして並び替え');
-        handle.style.cssText = 'display:none; padding:4px 10px; font-size:20px; cursor:grab;';
-        el.insertBefore(handle, el.firstChild);
-      }
-      el.draggable = sortMode;
-      el.ondragstart = sortMode ? (e) => {
-        dragged = el;
-        e.dataTransfer.effectAllowed = 'move';
-        try { e.dataTransfer.setData('text/plain', getId(el, i)); } catch (_) {}
-      } : null;
-      el.ondragover = sortMode ? (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; } : null;
-      el.ondrop = sortMode ? (e) => {
-        e.preventDefault();
-        if (dragged && dragged !== el) {
-          const rect = el.getBoundingClientRect();
-          list.insertBefore(dragged, e.clientY < rect.top + rect.height / 2 ? el : el.nextSibling);
-          saveOrder(cards(list).map((node, idx) => getId(node, idx)));
-        }
-      } : null;
-      el.ondragend = () => { dragged = null; };
-    });
-  };
-  document.addEventListener('DOMContentLoaded', () => {
-    const btn = document.getElementById('costockSortToggle');
-    if (!btn) return;
-    btn.addEventListener('click', () => {
-      sortMode = !sortMode;
-      btn.textContent = sortMode ? '並び替えを終了' : '並び替え';
-      applySavedOrder();
-      enableSort();
-    });
-    applySavedOrder();
-    enableSort();
-    // Re-apply after app list rerenders.
-    const observer = new MutationObserver(() => { applySavedOrder(); enableSort(); });
-    const list = findList();
-    if (list) observer.observe(list, {childList: true});
-  });
+/* CoStock v1.6.20: iPhone-friendly item reordering */
+window.costockReorderMode=false;
+(function(){
+ const key="costock_custom_order";
+ function getOrder(){try{return JSON.parse(localStorage.getItem(key)||"[]")}catch(e){return []}}
+ function setOrder(ids){try{localStorage.setItem(key,JSON.stringify(ids.map(String)))}catch(e){}}
+ function listCards(){return Array.from(document.querySelectorAll("#list .item[data-item-id]"))}
+ function capture(){return listCards().map(el=>el.dataset.itemId)}
+ function redraw(){
+   const list=document.getElementById("list");
+   if(!list)return;
+   listCards().forEach((el,i)=>{
+     let ctl=el.querySelector(".costock-order-controls");
+     if(window.costockReorderMode){
+       if(!ctl){
+         ctl=document.createElement("div"); ctl.className="costock-order-controls";
+         ctl.style.cssText="display:flex;gap:6px;margin:4px 0;";
+         ctl.innerHTML='<button type="button" class="btn ghost" data-move="-1" aria-label="上へ">↑ 上へ</button><button type="button" class="btn ghost" data-move="1" aria-label="下へ">↓ 下へ</button>';
+         el.insertBefore(ctl,el.firstChild);
+       }
+       ctl.style.display="flex";
+       ctl.querySelector('[data-move="-1"]').disabled=(i===0);
+       ctl.querySelector('[data-move="1"]').disabled=(i===listCards().length-1);
+     } else if(ctl){ctl.remove();}
+   });
+ }
+ document.addEventListener("click",function(e){
+   const toggle=e.target.closest("#costockSortToggle");
+   if(toggle){
+     window.costockReorderMode=!window.costockReorderMode;
+     toggle.textContent=window.costockReorderMode?"並び替え終了":"並び替え";
+     redraw(); return;
+   }
+   const move=e.target.closest(".costock-order-controls [data-move]");
+   if(move){
+     e.preventDefault(); e.stopPropagation();
+     const card=move.closest(".item"), delta=Number(move.dataset.move), cards=listCards();
+     const idx=cards.indexOf(card), target=cards[idx+delta];
+     if(!target)return;
+     const list=document.getElementById("list");
+     if(delta<0)list.insertBefore(card,target); else list.insertBefore(target,card);
+     setOrder(capture()); redraw();
+   }
+ },true);
+ const observer=new MutationObserver(()=>{if(window.costockReorderMode)redraw()});
+ document.addEventListener("DOMContentLoaded",()=>{
+   const list=document.getElementById("list");
+   if(list)observer.observe(list,{childList:true});
+   redraw();
+ });
 })();
-
 </script>
+
 </body></html>
